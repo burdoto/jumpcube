@@ -2,7 +2,6 @@ package de.kaleidox.jumpcube.cube;
 
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.Random;
 
 import de.kaleidox.jumpcube.exception.InvalidBlockBarException;
 import de.kaleidox.jumpcube.util.BukkitUtil;
@@ -17,8 +16,9 @@ import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 
+import static de.kaleidox.jumpcube.JumpCube.rng;
+
 public class BlockBar implements Generatable {
-    private static final Random rng = new Random();
     private static Material[] configMaterials = new Material[8];
     private final World world;
     private final @Range(from = 3, to = 3) int[] xyz;
@@ -59,8 +59,7 @@ public class BlockBar implements Generatable {
     public Material getRandomMaterial(@MagicConstant(valuesFromClass = MaterialGroup.class) int group) {
         switch (group) {
             case MaterialGroup.CUBE:
-                return materials[rng.nextInt(3)];
-            case MaterialGroup.PLACEABLE:
+                if (rng.nextDouble() % 1 < 0.985) return materials[rng.nextInt(3)];
                 return materials[3];
             case MaterialGroup.WALLS:
                 return materials[rng.nextInt(3) + 4];
@@ -157,8 +156,7 @@ public class BlockBar implements Generatable {
 
     public final static class MaterialGroup {
         public static final int CUBE = 0;
-        public static final int PLACEABLE = 1;
-        public static final int WALLS = 2;
-        public static final int GALLERY = 3;
+        public static final int WALLS = 1;
+        public static final int GALLERY = 2;
     }
 }
