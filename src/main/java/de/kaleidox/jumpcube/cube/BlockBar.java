@@ -1,34 +1,125 @@
 package de.kaleidox.jumpcube.cube;
 
-import de.kaleidox.jumpcube.util.BukkitUtil;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.Random;
 
-import org.bukkit.Location;
+import de.kaleidox.jumpcube.exception.InvalidBlockBarException;
+import de.kaleidox.jumpcube.util.BukkitUtil;
+import de.kaleidox.jumpcube.world.Generatable;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Range;
 
-public class BlockBar {
+public class BlockBar implements Generatable {
+    private static final Random rng = new Random();
     private static Material[] configMaterials = new Material[8];
-    private Material[] materials;
+    private final World world;
+    private final @Range(from = 3, to = 3) int[] xyz;
+    private final Material[] materials;
 
-    public BlockBar(Player player, @Nullable Material[] materials) {
-        if (materials != null) this.materials = materials;
-        else this.materials = configMaterials;
-
-        place(player);
+    public BlockBar(Player player) {
+        this(player, null);
     }
 
-    private void place(Player nearPlayer) {
-        World world = nearPlayer.getWorld();
-        Location loc = nearPlayer.getLocation();
-        int x = loc.getBlockX(), y = loc.getBlockY(), z = loc.getBlockZ();
+    public BlockBar(Player player, @Nullable Material[] materials) throws InvalidBlockBarException {
+        if (materials != null) this.materials = materials;
+        else this.materials = Arrays.copyOf(configMaterials, configMaterials.length);
+
+        this.world = player.getWorld();
+        this.xyz = BukkitUtil.getXYZ(player.getLocation());
+
+        generate();
+        validate();
+    }
+
+    private BlockBar(World world, int[] xyz) {
+        this.world = world;
+        this.xyz = xyz;
+        this.materials = new Material[8];
+
+        refresh();
+    }
+
+    @Override
+    public void generate() {
         final int[] c = {0};
 
         for (int addY : new int[]{1, 0})
             for (int addX : new int[]{1, 2, 3, 4})
-                world.getBlockAt(x + addX, y + addY, z).setType(materials[c[0]++]);
+                world.getBlockAt(xyz[0] + addX, xyz[1] + addY, xyz[2]).setType(materials[c[0]++]);
+    }
+
+    public Material getRandomMaterial(@MagicConstant(valuesFromClass = MaterialGroup.class) int group) {
+        switch (group) {
+            case MaterialGroup.CUBE:
+                return materials[rng.nextInt(3)];
+            case MaterialGroup.PLACEABLE:
+                return materials[3];
+            case MaterialGroup.WALLS:
+                return materials[rng.nextInt(3) + 4];
+            case MaterialGroup.GALLERY:
+                return materials[7];
+        }
+
+        return Material.LIGHT_GRAY_WOOL;
+    }
+
+    public Material getMaterial(String type) {
+        switch (Objects.requireNonNull(type, "type cannot be null").toLowerCase()) {
+            case "a":
+                return materials[0];
+            case "b":
+                return materials[1];
+            case "c":
+                return materials[2];
+            case "placeable":
+                return materials[3];
+            case "aFix":
+                return materials[4];
+            case "bFix":
+                return materials[5];
+            case "cFix":
+                return materials[6];
+            case "dFix":
+                return materials[7];
+        }
+        throw new AssertionError("Unexpected BlockType: " + type);
+    }
+
+    public void validate() throws InvalidBlockBarException {
+        refresh();
+
+        for (int i = 0; i < materials.length; i++) {
+            if (!materials[i].isSolid())
+                throw new InvalidBlockBarException(materials[i], InvalidBlockBarException.Cause.NON_SOLID);
+            if (i != 3 && materials[i].isInteractable())
+                throw new InvalidBlockBarException(materials[i], InvalidBlockBarException.Cause.INTERACTABLE);
+        }
+    }
+
+    public void refresh() {
+        final int[] c = {0};
+
+        for (int addY : new int[]{1, 0})
+            for (int addX : new int[]{1, 2, 3, 4})
+                materials[c[0]++] = world.getBlockAt(xyz[0] + addX, xyz[1] + addY, xyz[2]).getType();
+    }
+
+    public void save(final FileConfiguration config, final String basePath) {
+        // set world
+        config.set(basePath + "world", world.getName());
+
+        // set base position
+        config.set(basePath + "pos.x", xyz[0]);
+        config.set(basePath + "pos.y", xyz[1]);
+        config.set(basePath + "pos.z", xyz[2]);
     }
 
     public static void initConfig(FileConfiguration config) {
@@ -48,5 +139,26 @@ public class BlockBar {
                 .orElse(Material.BLUE_CONCRETE);
         configMaterials[7] = BukkitUtil.getMaterial(config.getString("cube.defaults.bar.dFix"))
                 .orElse(Material.LIGHT_GRAY_CONCRETE);
+    }
+
+    public static BlockBar create(FileConfiguration config, String basePath) {
+        World world = Bukkit.getWorld(Objects.requireNonNull(config.getString(basePath + "world"),
+                "No world defined for bar!"));
+        int[] xyz = new int[]{
+                config.getInt(basePath + "pos.x"),
+                config.getInt(basePath + "pos.y"),
+                config.getInt(basePath + "pos.z")
+        };
+
+        assert world != null : "Unknown world: " + config.getString(basePath + "world");
+
+        return new BlockBar(world, xyz);
+    }
+
+    public final static class MaterialGroup {
+        public static final int CUBE = 0;
+        public static final int PLACEABLE = 1;
+        public static final int WALLS = 2;
+        public static final int GALLERY = 3;
     }
 }
