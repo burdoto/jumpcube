@@ -2,14 +2,18 @@ package de.kaleidox.jumpcube;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
+import de.kaleidox.jumpcube.chat.MessageLevel;
 import de.kaleidox.jumpcube.cube.BlockBar;
 import de.kaleidox.jumpcube.cube.Cube;
 import de.kaleidox.jumpcube.cube.CubeCreationTool;
 import de.kaleidox.jumpcube.cube.ExistingCube;
+import de.kaleidox.jumpcube.exception.InnerCommandException;
+import de.kaleidox.jumpcube.exception.InvalidArgumentCountException;
 import de.kaleidox.jumpcube.util.BukkitUtil;
 
 import org.bukkit.ChatColor;
@@ -20,7 +24,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static de.kaleidox.jumpcube.chat.Chat.argError;
 import static de.kaleidox.jumpcube.chat.Chat.message;
 import static de.kaleidox.jumpcube.chat.MessageLevel.ERROR;
 import static de.kaleidox.jumpcube.chat.MessageLevel.INFO;
@@ -40,7 +43,7 @@ public class JumpCube extends JavaPlugin {
         switch (label) {
             case "jumpcube":
             case "jc":
-                if (!checkPerm(sender, Permission.USE)) return true;
+                if (!checkPerm(sender, Permission.USER)) return true;
                 if (args.length == 0) {
                     message(sender, INFO, "JumpCube version 0.0.1");
                     return true;
@@ -60,10 +63,12 @@ public class JumpCube extends JavaPlugin {
     public void onLoad() {
         super.onLoad();
 
+        this.logger = getLogger();
+
         saveConfig();
         saveDefaultConfig();
 
-        FileConfiguration config = getConfig();
+        final FileConfiguration config = getConfig();
         if (!config.isSet("cube.defaults.bar.a"))
             config.set("cube.defaults.bar.a", "red_wool");
         if (!config.isSet("cube.defaults.bar.b"))
@@ -85,8 +90,6 @@ public class JumpCube extends JavaPlugin {
 
         BlockBar.initConfig(config);
 
-        this.logger = getLogger();
-
         logger.info("JumpCube loaded!");
     }
 
@@ -103,7 +106,18 @@ public class JumpCube extends JavaPlugin {
         super.onEnable();
         instance = this;
 
+        final FileConfiguration config = getConfig();
+
+        Optional.ofNullable(config.getString("cubes.created"))
+                .map(str -> str.split(";"))
+                .map(Arrays::asList)
+                .ifPresent(list -> list.forEach(cubeName -> {
+                    ExistingCube.load(config, cubeName, null);
+                    logger.info("Loaded cube: " + cubeName);
+                }));
+
         logger.info("JumpCube enabled!");
+        logger.info("Please report bugs at https://github.com/burdoto/jumpcube/issues");
     }
 
     public boolean checkPerm(CommandSender sender, String permission) {
@@ -119,62 +133,75 @@ public class JumpCube extends JavaPlugin {
         final UUID senderUuid = BukkitUtil.getUuid(sender);
         final Cube sel = selections.get(senderUuid);
 
-        switch (subCommand) {
-            case "create":
-                if (!checkPerm(sender, Permission.CREATE)) return;
-                if (args.length != 1) {
-                    argError(sender, args.length, 1);
+        try {
+            switch (subCommand.toLowerCase()) {
+                case "create":
+                    if (!checkPerm(sender, Permission.ADMIN)) return;
+                    if (args.length != 1) throw new InvalidArgumentCountException(1, args.length);
+
+                    if (ExistingCube.exists(args[0])) {
+                        message(sender, ERROR, "A cube with that name already exists!");
+                        return;
+                    }
+
+                    if (sel instanceof CubeCreationTool && !((CubeCreationTool) sel).isReady()) {
+                        // delete old, nonready selection first
+                        sel.delete();
+                        selections.remove(senderUuid);
+                    }
+
+                    CubeCreationTool creationTool = new CubeCreationTool(BukkitUtil.getPlayer(sender));
+                    creationTool.setName(args[0]);
+                    selections.put(senderUuid, creationTool);
+                    message(sender, INFO, "Cube " + args[0] + " created and selected!");
                     return;
-                }
+                case "sel":
+                case "select":
+                    if (!checkPerm(sender, Permission.USER)) return;
+                    if (args.length != 1) throw new InvalidArgumentCountException(1, args.length);
 
-                if (ExistingCube.exists(args[0])) {
-                    message(sender, ERROR, "A cube with that name already exists!");
+                    if (sel != null && sel.getCubeName().equals(args[0])) {
+                        message(sender, INFO, "Cube " + args[0] + " is already selected!");
+                        return;
+                    }
+
+                    if (!ExistingCube.exists(args[0])) {
+                        message(sender, ERROR, "Cube " + args[0] + " does not exist!");
+                        return;
+                    }
+
+                    ExistingCube cube = ExistingCube.get(args[0]);
+                    assert cube != null;
+                    selections.put(senderUuid, cube);
+                    message(sender, INFO, "Cube " + args[0] + " selected!");
                     return;
-                }
-
-                if (sel instanceof CubeCreationTool && !((CubeCreationTool) sel).isReady()) {
-                    // delete old, nonready selection first
-                    sel.delete();
-                    selections.remove(senderUuid);
-                }
-
-                CubeCreationTool creationTool = new CubeCreationTool(BukkitUtil.getPlayer(sender));
-                creationTool.setName(args[0]);
-                selections.put(senderUuid, creationTool);
-                message(sender, INFO, "Cube " + args[0] + " created and selected!");
-                return;
-            case "select":
-                if (!checkPerm(sender, Permission.USE)) return;
-                if (args.length != 1) {
-                    argError(sender, args.length, 1);
+                case "pos":
+                case "pos1":
+                case "pos2":
+                    if (!checkPerm(sender, Permission.ADMIN)) return;
+                    CubeCreationTool.Commands.pos(sender, sel, subCommand, args);
                     return;
-                }
-
-                if (sel.getCubeName().equals(args[0])) {
-                    message(sender, INFO, "Cube " + args[0] + " is already selected!");
+                case "bar":
+                    if (!checkPerm(sender, Permission.ADMIN)) return;
+                    if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
+                    CubeCreationTool.Commands.bar(sender, sel, args);
                     return;
-                }
-
-                if (!ExistingCube.exists(args[0])) {
-                    message(sender, ERROR, "Cube " + args[0] + " does not exist!");
+                case "confirm":
+                    if (!checkPerm(sender, Permission.ADMIN)) return;
+                    if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
+                    CubeCreationTool.Commands.confirm(sender, sel);
                     return;
-                }
-
-                ExistingCube cube = ExistingCube.get(args[0]);
-                assert cube != null;
-                selections.put(senderUuid, cube);
-                message(sender, INFO, "Cube " + args[0] + " selected!");
-                return;
-            case "pos":
-            case "pos1":
-            case "pos2":
-                if (!checkPerm(sender, Permission.CREATE)) return;
-                CubeCreationTool.Commands.pos(sender, sel, subCommand, args);
-                return;
-            case "bar":
-                if (!checkPerm(sender, Permission.CREATE)) return;
-                CubeCreationTool.Commands.bar(sender, sel, args);
-                return;
+                // Game commands
+                case "regenerate":
+                case "regen":
+                    if (!checkPerm(sender, Permission.REGENERATE)) return;
+                    if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
+                    ExistingCube.Commands.regenerate(sender, sel);
+            }
+        } catch (InnerCommandException cEx) {
+            message(sender, cEx.getLevel(), cEx.getIngameText());
+            if (cEx.getLevel() == MessageLevel.EXCEPTION)
+                cEx.printStackTrace(System.out);
         }
     }
 
@@ -189,7 +216,10 @@ public class JumpCube extends JavaPlugin {
     }
 
     public static final class Permission {
-        public static final String USE = "jumpcube.base";
-        public static final String CREATE = "jumpcube.create";
+        public static final String USER = "jumpcube.user";
+
+        public static final String REGENERATE = "jumpcube.mod.regenerate";
+
+        public static final String ADMIN = "jumpcube.admin";
     }
 }
