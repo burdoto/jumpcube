@@ -1,0 +1,11 @@
+main: de.kaleidox.jumpcube.JumpCube
+name: JumpCube
+version: 0.0.1
+author: Kaleidox
+description: Continuation of the DeathCube plugin
+api-version: 1.13
+commands:
+  jumpcube:
+    description: JumpCube command
+    aliases:
+      - jc

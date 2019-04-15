@@ -1,0 +1,21 @@
+apply plugin: 'java'
+
+group 'de.kaleidox'
+version '0.0.1'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories.jcenter()
+
+task pluginJarForTesting(type: Jar) {
+    from sourceSets.main.java.outputDir
+    from('src/main/resources')
+    destinationDir = file("test/plugins/")
+    archivesBaseName = "jumpcube"
+}
+
+dependencies {
+    compileOnly fileTree("libs")
+    compileOnly 'org.jetbrains:annotations:17.0.0'
+}
