@@ -6,4 +6,6 @@ public interface Cube {
     void delete();
 
     int[][] getPositions();
+
+    BlockBar getBlockBar();
 }
