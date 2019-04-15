@@ -4,6 +4,7 @@ import de.kaleidox.jumpcube.JumpCube;
 import de.kaleidox.jumpcube.exception.InvalidArgumentCountException;
 import de.kaleidox.jumpcube.util.BukkitUtil;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
@@ -60,6 +61,11 @@ public class CubeCreationTool implements Cube {
     @Override
     public int[][] getPositions() {
         return pos;
+    }
+
+    @Override
+    public BlockBar getBlockBar() {
+        return bar;
     }
 
     public ExistingCube create() {
@@ -125,9 +131,14 @@ public class CubeCreationTool implements Cube {
 
             int[][] pos = sel.getPositions();
             if (pos[0] != null && pos[1] != null) {
-                double dist = sqrt(pow(pos[1][0] - pos[0][0], 2) + pow(pos[1][2] - pos[0][2], 2));
+                double dist = dist(pos);
                 if (dist < 0) dist = dist * -1;
-                message(sender, INFO, "Size: " + (int) dist + " (Even size is recommended)");
+                if (dist < 32) message(sender, INFO, "Size: " + ERROR.chatColor + (int) dist
+                        + INFO.chatColor + " (Cannot be smaller than 32)");
+                else if (dist > 64) message(sender, INFO, "Size: " + ERROR.chatColor + (int) dist
+                        + INFO.chatColor + " (Cannot be larger than 64)");
+                else message(sender, INFO, "Size: " + ChatColor.GREEN + (int) dist
+                            + INFO.chatColor + " (Even sizes are recommended)");
             }
         }
 
@@ -148,10 +159,22 @@ public class CubeCreationTool implements Cube {
                 return;
             }
 
+            if (dist(sel.getPositions()) < 32) {
+                message(sender, ERROR, "Cube must be at least 32 blocks wide!");
+                return;
+            } else if (dist(sel.getPositions()) > 64) {
+                message(sender, ERROR, "Cube must cant be wider than 64 blocks!");
+                return;
+            }
+
             ExistingCube cube = ((CubeCreationTool) sel).create();
-            cube.generate();
+            cube.generateFull();
 
             message(sender, INFO, "Cube " + sel.getCubeName() + " was created!");
+        }
+
+        private static double dist(int[][] pos) {
+            return sqrt(pow(pos[1][0] - pos[0][0], 2) + pow(pos[1][2] - pos[0][2], 2));
         }
 
         private static boolean validateEditability(CommandSender sender, Cube sel) {

@@ -15,9 +15,11 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.Nullable;
 
+import static java.lang.System.nanoTime;
 import static de.kaleidox.jumpcube.chat.Chat.message;
 import static de.kaleidox.jumpcube.chat.MessageLevel.ERROR;
 import static de.kaleidox.jumpcube.chat.MessageLevel.INFO;
+import static de.kaleidox.jumpcube.cube.BlockBar.MaterialGroup.CUBE;
 import static de.kaleidox.jumpcube.cube.BlockBar.MaterialGroup.WALLS;
 
 public class ExistingCube implements Cube, Generatable {
@@ -26,6 +28,7 @@ public class ExistingCube implements Cube, Generatable {
     private final World world;
     private final int[][] pos;
     private final BlockBar bar;
+    private long startNanos = -1;
 
     private ExistingCube(String name, World world, int[][] positions, BlockBar bar) {
         this.name = name;
@@ -60,45 +63,102 @@ public class ExistingCube implements Cube, Generatable {
     }
 
     @Override
-    public void generate() {
-        bar.validate();
+    public BlockBar getBlockBar() {
+        return bar;
+    }
+
+    public void generateFull() {
+        startNanos = nanoTime();
 
         // generate outter walls
-        int higherY = (pos[0][1] < pos[1][1] ? pos[1][1] : pos[0][1]);
+        int highestY = (pos[0][1] < pos[1][1] ? pos[1][1] : pos[0][1]);
 
         boolean alongZ = pos[0][0] < pos[1][0];
         int offsetX = alongZ ? 1 : -1;
         for (int movX = pos[0][0]; (alongZ ? movX < pos[1][0] + offsetX : movX > pos[1][0] + offsetX); movX += offsetX)
-            for (int movY = higherY; movY > 0; movY--) {
+            for (int movY = highestY; movY > 0; movY--) {
                 world.getBlockAt(movX, movY, pos[0][2]).setType(bar.getRandomMaterial(WALLS));
-                //System.out.println("CYCLE 1: movX = " + movX + " && movY = " + movY);
+                //System.out.println("[CYCLE 1]\tx = " + movX + " && y = " + movY + " && z = " + pos[0][2]);
             }
         for (int movX = pos[1][0]; (alongZ ? movX > pos[0][0] - offsetX : movX < pos[0][0] - offsetX); movX -= offsetX)
-            for (int movY = higherY; movY > 0; movY--) {
+            for (int movY = highestY; movY > 0; movY--) {
                 world.getBlockAt(movX, movY, pos[1][2]).setType(bar.getRandomMaterial(WALLS));
-                //System.out.println("CYCLE 2: movX = " + movX + " && movY = " + movY);
+                //System.out.println("[CYCLE 2]\tx = " + movX + " && y = " + movY + " && z = " + pos[1][2]);
             }
 
         boolean alongX = pos[0][2] < pos[1][2];
         int offsetZ = alongX ? 1 : -1;
         for (int movZ = pos[0][2] + offsetZ; (alongX ? movZ < pos[1][2] : movZ > pos[1][2]); movZ += offsetZ)
-            for (int movY = higherY; movY > 0; movY--) {
+            for (int movY = highestY; movY > 0; movY--) {
                 world.getBlockAt(pos[0][0], movY, movZ).setType(bar.getRandomMaterial(WALLS));
-                //System.out.println("CYCLE 3: movZ = " + movZ + " && movY = " + movY);
+                //System.out.println("[CYCLE 3]\tx = " + pos[0][0] + " && y = " + movY + " && z = " + movZ);
             }
         for (int movZ = pos[1][2] - offsetZ; (alongX ? movZ > pos[0][2] : movZ < pos[0][2]); movZ -= offsetZ)
-            for (int movY = higherY; movY > 0; movY--) {
+            for (int movY = highestY; movY > 0; movY--) {
                 world.getBlockAt(pos[1][0], movY, movZ).setType(bar.getRandomMaterial(WALLS));
-                //System.out.println("CYCLE 4: movZ = " + movZ + " && movY = " + movY);
+                //System.out.println("[CYCLE 4]\tx = " + pos[1][0] + " && y = " + movY + " && z = " + movZ);
             }
+
+        generate();
+    }
+
+    @Override
+    public void generate() {
+        if (startNanos == -1) startNanos = nanoTime();
+
+        int highest = (pos[0][1] < pos[1][1] ? pos[1][1] : pos[0][1]);
+        boolean alongZ = pos[0][0] < pos[1][0];
+        int offsetX = alongZ ? 1 : -1;
+        boolean alongX = pos[0][2] < pos[1][2];
+        int offsetZ = alongX ? 1 : -1;
 
         // clear inner area
         for (int movX = pos[0][0] + offsetX; (alongZ ? movX < pos[1][0] : movX > pos[1][0]); movX += offsetX)
             for (int movZ = pos[0][2] + offsetZ; (alongX ? movZ < pos[1][2] : movZ > pos[1][2]); movZ += offsetX)
-                for (int movY = higherY; movY > 0; movY--) {
+                for (int movY = 255; movY > 0; movY--) {
                     world.getBlockAt(movX, movY, movZ).setType(Material.AIR);
-                    //System.out.println(String.format("CYCLE 5: movX = %d && movY = %d && movZ = %d", movX, movY, movZ));
+                    /*
+                    if (movX > 300 || movY > 255 || movZ < -300)
+                        System.err.println("[CYCLE 5]\tx = " + movX + " && y = " + movY + " && z = " + movZ);
+                        */
                 }
+
+        int sizeX = pos[0][0] - pos[1][0], sizeZ = pos[0][2] - pos[1][2];
+        if (sizeX < 0) sizeX = sizeX * -1;
+        if (sizeZ < 0) sizeZ = sizeZ * -1;
+
+        final double density = 0.183; // todo Add changeable density
+        final int height = 110; // todo Add changeable height
+        final double spacing = 0.2;
+
+        final Material[][][] matrix = new Material[sizeX - (int) (sizeX * (spacing * 2))][height][sizeZ - (int) (sizeZ * (spacing * 2))];
+
+        for (int x = 0; x < matrix.length; x++)
+            for (int y = 0; y < matrix[x].length; y++)
+                for (int z = 0; z < matrix[x][y].length; z++) {
+                    if (JumpCube.rng.nextDouble() % 1 > density)
+                        matrix[x][y][z] = Material.AIR;
+                    else matrix[x][y][z] = bar.getRandomMaterial(CUBE);
+                    //System.out.println("[MATRIX]\tx = " + x + " && y = " + y + " && z = " + z);
+                }
+
+        int mX = pos[alongZ ? 0 : 1][0] + (int) (sizeX * spacing);
+        int mZ = pos[alongZ ? 0 : 1][2] + (int) (sizeZ * spacing);
+        for (int x = 0; x < matrix.length; x++)
+            for (int y = 0; y < matrix[x].length; y++)
+                for (int z = 0; z < matrix[x][y].length; z++) {
+                    int uX = mX + x, uY = y + 10, uZ = mZ + z;
+                    world.getBlockAt(uX, uY, uZ).setType(matrix[x][y][z]);
+                    /*
+                    if (uX > 300 || uY > 255 || uZ < -300)
+                        System.err.println("[CYCLE 6]\tx = " + uX + " && y = " + uY + " && z = " + uZ);
+                        */
+                }
+
+        assert JumpCube.getInstance() != null;
+        JumpCube.getInstance().getLogger().info("Cube " + name + " was generated, took "
+                + (nanoTime() - startNanos) + " nanoseconds.");
+        startNanos = -1;
     }
 
     @Nullable
@@ -137,10 +197,13 @@ public class ExistingCube implements Cube, Generatable {
     }
 
     public final static class Commands {
-        public static void regenerate(CommandSender sender, Cube sel) {
+        public static void regenerate(CommandSender sender, Cube sel, boolean full) {
             if (!validateSelection(sender, sel)) return;
 
-            ((ExistingCube) sel).generate();
+            sel.getBlockBar().validate();
+            if (full) ((ExistingCube) sel).generateFull();
+            else ((ExistingCube) sel).generate();
+
             message(sender, INFO, "Cube was regenerated!");
         }
 

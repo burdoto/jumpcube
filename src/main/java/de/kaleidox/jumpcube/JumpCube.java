@@ -3,6 +3,7 @@ package de.kaleidox.jumpcube;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
@@ -29,6 +30,7 @@ import static de.kaleidox.jumpcube.chat.MessageLevel.ERROR;
 import static de.kaleidox.jumpcube.chat.MessageLevel.INFO;
 
 public class JumpCube extends JavaPlugin {
+    public static final Random rng = new Random();
     @Nullable private static JumpCube instance;
 
     public Map<UUID, Cube> selections = new ConcurrentHashMap<>();
@@ -85,6 +87,8 @@ public class JumpCube extends JavaPlugin {
             config.set("cube.defaults.bar.cFix", "blue_concrete");
         if (!config.isSet("cube.defaults.bar.dFix"))
             config.set("cube.defaults.bar.dFix", "light_gray_concrete");
+        if (!config.isSet("cube.defaults.height"))
+            config.set("cube.defaults.height", 120);
 
         saveConfig();
 
@@ -196,7 +200,14 @@ public class JumpCube extends JavaPlugin {
                 case "regen":
                     if (!checkPerm(sender, Permission.REGENERATE)) return;
                     if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
-                    ExistingCube.Commands.regenerate(sender, sel);
+                    ExistingCube.Commands.regenerate(sender, sel, false);
+                    return;
+                case "regenerate-complete":
+                case "regen-complete":
+                    if (!checkPerm(sender, Permission.REGENERATE)) return;
+                    if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
+                    ExistingCube.Commands.regenerate(sender, sel, true);
+                    return;
             }
         } catch (InnerCommandException cEx) {
             message(sender, cEx.getLevel(), cEx.getIngameText());
