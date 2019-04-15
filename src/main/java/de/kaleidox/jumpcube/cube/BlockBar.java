@@ -70,28 +70,6 @@ public class BlockBar implements Generatable {
         return Material.LIGHT_GRAY_WOOL;
     }
 
-    public Material getMaterial(String type) {
-        switch (Objects.requireNonNull(type, "type cannot be null").toLowerCase()) {
-            case "a":
-                return materials[0];
-            case "b":
-                return materials[1];
-            case "c":
-                return materials[2];
-            case "placeable":
-                return materials[3];
-            case "aFix":
-                return materials[4];
-            case "bFix":
-                return materials[5];
-            case "cFix":
-                return materials[6];
-            case "dFix":
-                return materials[7];
-        }
-        throw new AssertionError("Unexpected BlockType: " + type);
-    }
-
     public void validate() throws InvalidBlockBarException {
         refresh();
 
