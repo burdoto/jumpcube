@@ -20,6 +20,7 @@ import static de.kaleidox.jumpcube.chat.Chat.message;
 import static de.kaleidox.jumpcube.chat.MessageLevel.ERROR;
 import static de.kaleidox.jumpcube.chat.MessageLevel.INFO;
 import static de.kaleidox.jumpcube.cube.BlockBar.MaterialGroup.CUBE;
+import static de.kaleidox.jumpcube.cube.BlockBar.MaterialGroup.GALLERY;
 import static de.kaleidox.jumpcube.cube.BlockBar.MaterialGroup.WALLS;
 
 public class ExistingCube implements Cube, Generatable {
@@ -28,6 +29,8 @@ public class ExistingCube implements Cube, Generatable {
     private final World world;
     private final int[][] pos;
     private final BlockBar bar;
+    private int[][] tpPos;
+    private int tpCycle = 0;
     private long startNanos = -1;
 
     private ExistingCube(String name, World world, int[][] positions, BlockBar bar) {
@@ -71,33 +74,79 @@ public class ExistingCube implements Cube, Generatable {
         startNanos = nanoTime();
 
         // generate outter walls
-        int highestY = (pos[0][1] < pos[1][1] ? pos[1][1] : pos[0][1]);
 
-        boolean alongZ = pos[0][0] < pos[1][0];
-        int offsetX = alongZ ? 1 : -1;
-        for (int movX = pos[0][0]; (alongZ ? movX < pos[1][0] + offsetX : movX > pos[1][0] + offsetX); movX += offsetX)
-            for (int movY = highestY; movY > 0; movY--) {
+        int highest = (pos[0][1] < pos[1][1] ? pos[1][1] : pos[0][1]);
+        boolean smallX = pos[0][0] < pos[1][0];
+        int offsetX = smallX ? 1 : -1;
+        boolean smallZ = pos[0][2] < pos[1][2];
+        int offsetZ = smallZ ? 1 : -1;
+
+        for (int movX = pos[0][0]; (smallX ? movX < pos[1][0] + offsetX : movX > pos[1][0] + offsetX); movX += offsetX)
+            for (int movY = highest; movY > 0; movY--) {
                 world.getBlockAt(movX, movY, pos[0][2]).setType(bar.getRandomMaterial(WALLS));
                 //System.out.println("[CYCLE 1]\tx = " + movX + " && y = " + movY + " && z = " + pos[0][2]);
             }
-        for (int movX = pos[1][0]; (alongZ ? movX > pos[0][0] - offsetX : movX < pos[0][0] - offsetX); movX -= offsetX)
-            for (int movY = highestY; movY > 0; movY--) {
+        for (int movX = pos[1][0]; (smallX ? movX > pos[0][0] - offsetX : movX < pos[0][0] - offsetX); movX -= offsetX)
+            for (int movY = highest; movY > 0; movY--) {
                 world.getBlockAt(movX, movY, pos[1][2]).setType(bar.getRandomMaterial(WALLS));
                 //System.out.println("[CYCLE 2]\tx = " + movX + " && y = " + movY + " && z = " + pos[1][2]);
             }
 
-        boolean alongX = pos[0][2] < pos[1][2];
-        int offsetZ = alongX ? 1 : -1;
-        for (int movZ = pos[0][2] + offsetZ; (alongX ? movZ < pos[1][2] : movZ > pos[1][2]); movZ += offsetZ)
-            for (int movY = highestY; movY > 0; movY--) {
+        for (int movZ = pos[0][2] + offsetZ; (smallZ ? movZ < pos[1][2] : movZ > pos[1][2]); movZ += offsetZ)
+            for (int movY = highest; movY > 0; movY--) {
                 world.getBlockAt(pos[0][0], movY, movZ).setType(bar.getRandomMaterial(WALLS));
                 //System.out.println("[CYCLE 3]\tx = " + pos[0][0] + " && y = " + movY + " && z = " + movZ);
             }
-        for (int movZ = pos[1][2] - offsetZ; (alongX ? movZ > pos[0][2] : movZ < pos[0][2]); movZ -= offsetZ)
-            for (int movY = highestY; movY > 0; movY--) {
+        for (int movZ = pos[1][2] - offsetZ; (smallZ ? movZ > pos[0][2] : movZ < pos[0][2]); movZ -= offsetZ)
+            for (int movY = highest; movY > 0; movY--) {
                 world.getBlockAt(pos[1][0], movY, movZ).setType(bar.getRandomMaterial(WALLS));
                 //System.out.println("[CYCLE 4]\tx = " + pos[1][0] + " && y = " + movY + " && z = " + movZ);
             }
+
+        // clear inner area
+        for (int movX = pos[0][0] + offsetX; (smallX ? movX < pos[1][0] : movX > pos[1][0]); movX += offsetX)
+            for (int movZ = pos[0][2] + offsetZ; (smallZ ? movZ < pos[1][2] : movZ > pos[1][2]); movZ += offsetX)
+                for (int movY = 255; movY > 0; movY--) {
+                    world.getBlockAt(movX, movY, movZ).setType(Material.AIR);
+                    /*
+                    if (movX > 300 || movY > 255 || movZ < -300)
+                        System.err.println("[CYCLE 5]\tx = " + movX + " && y = " + movY + " && z = " + movZ);
+                        */
+                }
+
+        final int galleryHeight = 19;
+
+        for (int off : new int[]{1, 2}) {
+            int minX = pos[smallX ? 0 : 1][0] + off;
+            int maxX = pos[smallX ? 1 : 0][0] - off;
+            int minZ = pos[smallZ ? 0 : 1][2] + off;
+            int maxZ = pos[smallZ ? 1 : 0][2] - off;
+
+            for (int x = minX; x <= maxX; x++)
+                for (int z = minZ; z <= maxZ; z++) {
+                    if (x == minX || x == maxX || z == minZ || z == maxZ) {
+                        world.getBlockAt(x, galleryHeight, z).setType(bar.getRandomMaterial(GALLERY));
+                        if (off == 1)
+                            world.getBlockAt(x, galleryHeight + 3, z).setType(Material.GLASS);
+                        if (off == 2)
+                            world.getBlockAt(x, galleryHeight + 1, z).setType(Material.GLASS_PANE);
+                        //System.out.println("[CYCLE 6]\tx = " + x + " && y = " + galleryHeight + " && z = " + z);
+                    }
+                    if (off == 1) {
+                        world.getBlockAt(x, 1, z).setType(Material.LAVA);
+                        world.getBlockAt(x, 2, z).setType(Material.LAVA);
+                        world.getBlockAt(x, 3, z).setType(Material.LAVA);
+                    }
+                }
+
+            if (off == 1)
+                tpPos = new int[][]{
+                        new int[]{minX, galleryHeight + 1, minZ},
+                        new int[]{maxX, galleryHeight + 1, maxZ},
+                        new int[]{minX, galleryHeight + 1, maxZ},
+                        new int[]{maxX, galleryHeight + 1, minZ}
+                };
+        }
 
         generate();
     }
@@ -107,21 +156,10 @@ public class ExistingCube implements Cube, Generatable {
         if (startNanos == -1) startNanos = nanoTime();
 
         int highest = (pos[0][1] < pos[1][1] ? pos[1][1] : pos[0][1]);
-        boolean alongZ = pos[0][0] < pos[1][0];
-        int offsetX = alongZ ? 1 : -1;
-        boolean alongX = pos[0][2] < pos[1][2];
-        int offsetZ = alongX ? 1 : -1;
-
-        // clear inner area
-        for (int movX = pos[0][0] + offsetX; (alongZ ? movX < pos[1][0] : movX > pos[1][0]); movX += offsetX)
-            for (int movZ = pos[0][2] + offsetZ; (alongX ? movZ < pos[1][2] : movZ > pos[1][2]); movZ += offsetX)
-                for (int movY = 255; movY > 0; movY--) {
-                    world.getBlockAt(movX, movY, movZ).setType(Material.AIR);
-                    /*
-                    if (movX > 300 || movY > 255 || movZ < -300)
-                        System.err.println("[CYCLE 5]\tx = " + movX + " && y = " + movY + " && z = " + movZ);
-                        */
-                }
+        boolean smallX = pos[0][0] < pos[1][0];
+        int offsetX = smallX ? 1 : -1;
+        boolean smallZ = pos[0][2] < pos[1][2];
+        int offsetZ = smallZ ? 1 : -1;
 
         int sizeX = pos[0][0] - pos[1][0], sizeZ = pos[0][2] - pos[1][2];
         if (sizeX < 0) sizeX = sizeX * -1;
@@ -142,8 +180,8 @@ public class ExistingCube implements Cube, Generatable {
                     //System.out.println("[MATRIX]\tx = " + x + " && y = " + y + " && z = " + z);
                 }
 
-        int mX = pos[alongZ ? 0 : 1][0] + (int) (sizeX * spacing);
-        int mZ = pos[alongZ ? 0 : 1][2] + (int) (sizeZ * spacing);
+        int mX = pos[smallX ? 0 : 1][0] + (int) (sizeX * spacing);
+        int mZ = pos[smallX ? 0 : 1][2] + (int) (sizeZ * spacing);
         for (int x = 0; x < matrix.length; x++)
             for (int y = 0; y < matrix[x].length; y++)
                 for (int z = 0; z < matrix[x][y].length; z++) {
@@ -151,7 +189,7 @@ public class ExistingCube implements Cube, Generatable {
                     world.getBlockAt(uX, uY, uZ).setType(matrix[x][y][z]);
                     /*
                     if (uX > 300 || uY > 255 || uZ < -300)
-                        System.err.println("[CYCLE 6]\tx = " + uX + " && y = " + uY + " && z = " + uZ);
+                        System.err.println("[CYCLE 7]\tx = " + uX + " && y = " + uY + " && z = " + uZ);
                         */
                 }
 
