@@ -6,18 +6,21 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import de.kaleidox.jumpcube.JumpCube;
 import de.kaleidox.jumpcube.exception.DuplicateCubeException;
+import de.kaleidox.jumpcube.game.GameManager;
+import de.kaleidox.jumpcube.util.BukkitUtil;
 import de.kaleidox.jumpcube.world.Generatable;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 import static java.lang.System.nanoTime;
 import static de.kaleidox.jumpcube.chat.Chat.message;
-import static de.kaleidox.jumpcube.chat.MessageLevel.ERROR;
 import static de.kaleidox.jumpcube.chat.MessageLevel.INFO;
 import static de.kaleidox.jumpcube.cube.BlockBar.MaterialGroup.CUBE;
 import static de.kaleidox.jumpcube.cube.BlockBar.MaterialGroup.GALLERY;
@@ -29,8 +32,13 @@ public class ExistingCube implements Cube, Generatable {
     private final World world;
     private final int[][] pos;
     private final BlockBar bar;
+    private final int galleryHeight = 19;
+    private final double density = 0.183; // todo Add changeable density
+    private final int height = 110; // todo Add changeable height
+    private final double spacing = 0.2;
+    public final GameManager manager;
     private int[][] tpPos;
-    private int tpCycle = 0;
+    private int tpCycle = -1;
     private long startNanos = -1;
 
     private ExistingCube(String name, World world, int[][] positions, BlockBar bar) {
@@ -38,6 +46,8 @@ public class ExistingCube implements Cube, Generatable {
         this.world = world;
         this.pos = positions;
         this.bar = bar;
+
+        this.manager = new GameManager(this);
 
         if (instances.containsKey(name)) throw new DuplicateCubeException(name);
         instances.put(name, this);
@@ -68,6 +78,12 @@ public class ExistingCube implements Cube, Generatable {
     @Override
     public BlockBar getBlockBar() {
         return bar;
+    }
+
+    public void teleportIn(Player player) {
+        if (tpCycle++ > 3) tpCycle = 0;
+        Location location = BukkitUtil.getLocation(world, tpPos[tpCycle]);
+        player.teleport(location.add(0, 1.2, 0));
     }
 
     public void generateFull() {
@@ -113,8 +129,6 @@ public class ExistingCube implements Cube, Generatable {
                         System.err.println("[CYCLE 5]\tx = " + movX + " && y = " + movY + " && z = " + movZ);
                         */
                 }
-
-        final int galleryHeight = 19;
 
         for (int off : new int[]{1, 2}) {
             int minX = pos[smallX ? 0 : 1][0] + off;
@@ -164,10 +178,6 @@ public class ExistingCube implements Cube, Generatable {
         int sizeX = pos[0][0] - pos[1][0], sizeZ = pos[0][2] - pos[1][2];
         if (sizeX < 0) sizeX = sizeX * -1;
         if (sizeZ < 0) sizeZ = sizeZ * -1;
-
-        final double density = 0.183; // todo Add changeable density
-        final int height = 110; // todo Add changeable height
-        final double spacing = 0.2;
 
         final Material[][][] matrix = new Material[sizeX - (int) (sizeX * (spacing * 2))][height][sizeZ - (int) (sizeZ * (spacing * 2))];
 
@@ -236,25 +246,11 @@ public class ExistingCube implements Cube, Generatable {
 
     public final static class Commands {
         public static void regenerate(CommandSender sender, Cube sel, boolean full) {
-            if (!validateSelection(sender, sel)) return;
-
             sel.getBlockBar().validate();
             if (full) ((ExistingCube) sel).generateFull();
             else ((ExistingCube) sel).generate();
 
             message(sender, INFO, "Cube was regenerated!");
-        }
-
-        private static boolean validateSelection(CommandSender sender, Cube sel) {
-            if (sel == null) {
-                message(sender, ERROR, "No cube selected!");
-                return false;
-            }
-            if (!(sel instanceof ExistingCube)) {
-                message(sender, ERROR, "Cube " + sel.getCubeName() + " is not finished!");
-                return false;
-            }
-            return true;
         }
     }
 }

@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
@@ -42,5 +43,9 @@ public class BukkitUtil {
     @Range(from = 3, to = 3)
     public static int[] getXYZ(Location location) {
         return new int[]{location.getBlockX(), location.getBlockY(), location.getBlockZ()};
+    }
+
+    public static Location getLocation(World world, int[] xyz) {
+        return world.getBlockAt(xyz[0], xyz[1], xyz[2]).getLocation();
     }
 }

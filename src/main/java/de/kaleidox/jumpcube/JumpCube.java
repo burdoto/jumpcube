@@ -15,6 +15,7 @@ import de.kaleidox.jumpcube.cube.CubeCreationTool;
 import de.kaleidox.jumpcube.cube.ExistingCube;
 import de.kaleidox.jumpcube.exception.InnerCommandException;
 import de.kaleidox.jumpcube.exception.InvalidArgumentCountException;
+import de.kaleidox.jumpcube.game.GameManager;
 import de.kaleidox.jumpcube.util.BukkitUtil;
 
 import org.bukkit.ChatColor;
@@ -199,14 +200,22 @@ public class JumpCube extends JavaPlugin {
                 case "regenerate":
                 case "regen":
                     if (!checkPerm(sender, Permission.REGENERATE)) return;
+                    if (!validateSelection(sender, sel)) return;
                     if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
                     ExistingCube.Commands.regenerate(sender, sel, false);
                     return;
                 case "regenerate-complete":
                 case "regen-complete":
                     if (!checkPerm(sender, Permission.REGENERATE)) return;
+                    if (!validateSelection(sender, sel)) return;
                     if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
                     ExistingCube.Commands.regenerate(sender, sel, true);
+                    return;
+                case "join":
+                    if (!checkPerm(sender, Permission.USER)) return;
+                    if (!validateSelection(sender, sel)) return;
+                    if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
+                    ((ExistingCube) sel).manager.join(sender);
                     return;
             }
         } catch (InnerCommandException cEx) {
@@ -214,6 +223,18 @@ public class JumpCube extends JavaPlugin {
             if (cEx.getLevel() == MessageLevel.EXCEPTION)
                 cEx.printStackTrace(System.out);
         }
+    }
+
+    private static boolean validateSelection(CommandSender sender, Cube sel) {
+        if (sel == null) {
+            message(sender, ERROR, "No cube selected!");
+            return false;
+        }
+        if (!(sel instanceof ExistingCube)) {
+            message(sender, ERROR, "Cube " + sel.getCubeName() + " is not finished!");
+            return false;
+        }
+        return true;
     }
 
     private void messagePerm(CommandSender sender, String permission) {
