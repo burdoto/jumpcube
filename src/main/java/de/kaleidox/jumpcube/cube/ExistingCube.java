@@ -26,6 +26,9 @@ import static de.kaleidox.jumpcube.cube.BlockBar.MaterialGroup.CUBE;
 import static de.kaleidox.jumpcube.cube.BlockBar.MaterialGroup.GALLERY;
 import static de.kaleidox.jumpcube.cube.BlockBar.MaterialGroup.WALLS;
 import static org.bukkit.Material.AIR;
+import static org.bukkit.Material.GLASS;
+import static org.bukkit.Material.GLASS_PANE;
+import static org.bukkit.Material.LAVA;
 
 public class ExistingCube implements Cube, Generatable {
     private final static Map<String, Cube> instances = new ConcurrentHashMap<>();
@@ -117,16 +120,16 @@ public class ExistingCube implements Cube, Generatable {
                         else {
                             world.getBlockAt(x, galleryHeight, z).setType(bar.getRandomMaterial(GALLERY));
                             if (off == 1)
-                                world.getBlockAt(x, galleryHeight + 3, z).setType(Material.GLASS);
+                                world.getBlockAt(x, galleryHeight + 3, z).setType(GLASS);
                             if (off == 2)
-                                world.getBlockAt(x, galleryHeight + 1, z).setType(Material.GLASS_PANE);
+                                world.getBlockAt(x, galleryHeight + 1, z).setType(GLASS_PANE);
                         }
                     }
 
                     if (off == 1) {
-                        world.getBlockAt(x, 1, z).setType(Material.LAVA);
-                        world.getBlockAt(x, 2, z).setType(Material.LAVA);
-                        world.getBlockAt(x, 3, z).setType(Material.LAVA);
+                        world.getBlockAt(x, 1, z).setType(LAVA);
+                        world.getBlockAt(x, 2, z).setType(LAVA);
+                        world.getBlockAt(x, 3, z).setType(LAVA);
                     }
                 }
         }
