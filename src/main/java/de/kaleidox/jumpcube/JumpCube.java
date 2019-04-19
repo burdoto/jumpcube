@@ -259,6 +259,7 @@ public class JumpCube extends JavaPlugin {
     public static final class Permission {
         public static final String USER = "jumpcube.user";
 
+        public static final String START_EARLY = "jumpcube.vip.earlystart";
 
         public static final String REGENERATE = "jumpcube.mod.regenerate";
 
