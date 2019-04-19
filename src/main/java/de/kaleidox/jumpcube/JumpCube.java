@@ -228,7 +228,7 @@ public class JumpCube extends JavaPlugin {
     private Cube getSelection(Player player) {
         return Optional.ofNullable(selections.get(player.getUniqueId()))
                 .orElseGet(() -> {
-                    if (selections.size() == 1) return selections.entrySet().iterator().next().getValue();
+                    if (MAP.size() == 1) return MAP.entrySet().iterator().next().getValue();
                     else throw new InnerCommandException(ERROR, "Could not auto-select cube.") {
                     };
                 });

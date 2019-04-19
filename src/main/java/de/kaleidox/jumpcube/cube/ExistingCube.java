@@ -31,7 +31,7 @@ import static org.bukkit.Material.GLASS_PANE;
 import static org.bukkit.Material.LAVA;
 
 public class ExistingCube implements Cube, Generatable {
-    private final static Map<String, Cube> instances = new ConcurrentHashMap<>();
+    public final static Map<String, Cube> MAP = new ConcurrentHashMap<>();
     public final GameManager manager;
     private final String name;
     private final World world;
@@ -53,8 +53,8 @@ public class ExistingCube implements Cube, Generatable {
 
         this.manager = new GameManager(this);
 
-        if (instances.containsKey(name)) throw new DuplicateCubeException(name);
-        instances.put(name, this);
+        if (MAP.containsKey(name)) throw new DuplicateCubeException(name);
+        MAP.put(name, this);
     }
 
     @Override
@@ -67,7 +67,7 @@ public class ExistingCube implements Cube, Generatable {
         assert JumpCube.getInstance() != null;
 
         // remove from maps
-        instances.remove(name, this);
+        MAP.remove(name, this);
         JumpCube.getInstance().selections.forEach((key, value) -> {
             if (value == this)
                 JumpCube.getInstance().selections.remove(key, value);
@@ -178,11 +178,11 @@ public class ExistingCube implements Cube, Generatable {
 
     @Nullable
     public static ExistingCube get(String name) {
-        return (ExistingCube) instances.get(name);
+        return (ExistingCube) MAP.get(name);
     }
 
     public static boolean exists(String name) {
-        return instances.containsKey(name);
+        return MAP.containsKey(name);
     }
 
     public static ExistingCube load(final FileConfiguration config, String name, @Nullable BlockBar bar)
