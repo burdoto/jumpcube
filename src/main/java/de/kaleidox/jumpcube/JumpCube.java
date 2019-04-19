@@ -15,13 +15,13 @@ import de.kaleidox.jumpcube.cube.CubeCreationTool;
 import de.kaleidox.jumpcube.cube.ExistingCube;
 import de.kaleidox.jumpcube.exception.InnerCommandException;
 import de.kaleidox.jumpcube.exception.InvalidArgumentCountException;
-import de.kaleidox.jumpcube.game.GameManager;
 import de.kaleidox.jumpcube.util.BukkitUtil;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -136,7 +136,7 @@ public class JumpCube extends JavaPlugin {
 
     private void subCommand(CommandSender sender, String subCommand, String[] args) {
         final UUID senderUuid = BukkitUtil.getUuid(sender);
-        final Cube sel = selections.get(senderUuid);
+        final Cube sel = getSelection(BukkitUtil.getPlayer(sender));
 
         try {
             switch (subCommand.toLowerCase()) {
@@ -225,16 +225,13 @@ public class JumpCube extends JavaPlugin {
         }
     }
 
-    private static boolean validateSelection(CommandSender sender, Cube sel) {
-        if (sel == null) {
-            message(sender, ERROR, "No cube selected!");
-            return false;
-        }
-        if (!(sel instanceof ExistingCube)) {
-            message(sender, ERROR, "Cube " + sel.getCubeName() + " is not finished!");
-            return false;
-        }
-        return true;
+    private Cube getSelection(Player player) {
+        return Optional.ofNullable(selections.get(player.getUniqueId()))
+                .orElseGet(() -> {
+                    if (selections.size() == 1) return selections.entrySet().iterator().next().getValue();
+                    else throw new InnerCommandException(ERROR, "Could not auto-select cube.") {
+                    };
+                });
     }
 
     private void messagePerm(CommandSender sender, String permission) {
@@ -247,8 +244,21 @@ public class JumpCube extends JavaPlugin {
         return instance;
     }
 
+    private static boolean validateSelection(CommandSender sender, Cube sel) {
+        if (sel == null) {
+            message(sender, ERROR, "No cube selected!");
+            return false;
+        }
+        if (!(sel instanceof ExistingCube)) {
+            message(sender, ERROR, "Cube " + sel.getCubeName() + " is not finished!");
+            return false;
+        }
+        return true;
+    }
+
     public static final class Permission {
         public static final String USER = "jumpcube.user";
+
 
         public static final String REGENERATE = "jumpcube.mod.regenerate";
 
