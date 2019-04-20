@@ -68,6 +68,8 @@ public class GameManager implements Startable {
                     scheduler.schedule(new BroadcastRemaining(x), baseTime - x, SECONDS);
                     scheduler.schedule(new BroadcastRemaining(x * 10), baseTime - (x * 10), SECONDS);
                 });
+
+        scheduler.schedule(cube::prepare, baseTime / 3, SECONDS);
     }
 
     private class BroadcastRemaining implements Runnable {
