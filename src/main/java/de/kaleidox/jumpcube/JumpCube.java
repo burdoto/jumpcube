@@ -224,6 +224,12 @@ public class JumpCube extends JavaPlugin {
                 if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
                 ((ExistingCube) sel).manager.join(sender);
                 return;
+            case "start":
+                if (!checkPerm(sender, Permission.START_EARLY)) return;
+                if (!validateSelection(sender, sel)) return;
+                if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
+                ((ExistingCube) sel).manager.start();
+                return;
         }
     }
 
@@ -231,6 +237,7 @@ public class JumpCube extends JavaPlugin {
         return Optional.ofNullable(selections.get(player.getUniqueId()))
                 .orElseGet(() -> {
                     if (MAP.size() == 1) return MAP.entrySet().iterator().next().getValue();
+
                     else throw new InnerCommandException(ERROR, "Could not auto-select cube.") {
                     };
                 });
