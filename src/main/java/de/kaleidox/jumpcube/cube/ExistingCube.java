@@ -100,11 +100,15 @@ public class ExistingCube implements Cube, Generatable, Startable {
         final int maxY = max(pos[0][1], pos[1][1]);
         final boolean smallX = pos[0][0] < pos[1][0];
         final boolean smallZ = pos[0][2] < pos[1][2];
-        int minX, maxX, minZ, maxZ;
+        int minX = min(pos[0][0], pos[1][0]);
+        int maxX = max(pos[0][0], pos[1][0]);
+        int minZ = min(pos[0][2], pos[1][2]);
+        int maxZ = max(pos[0][2], pos[1][2]);
+        
         int x, y, z;
 
-        for (x = pos[smallX ? 0 : 1][0]; smallX ? (x < pos[1][0]) : (x > pos[1][0]); x += (smallX ? 1 : -1))
-            for (z = pos[smallZ ? 0 : 1][2]; smallZ ? (z < pos[1][2]) : (z > pos[1][2]); z += (smallZ ? 1 : -1))
+        for (x = minX; x < maxX; x++)
+            for (z = minZ; z < maxZ; z++)
                 for (y = 255; y > 0; y--)
                     world.getBlockAt(x, y, z).setType(AIR);
 
@@ -143,6 +147,7 @@ public class ExistingCube implements Cube, Generatable, Startable {
     @Override
     public void generate() {
         if (startNanos == -1) startNanos = nanoTime();
+
 
         int highest = (pos[0][1] < pos[1][1] ? pos[1][1] : pos[0][1]);
         boolean smallX = pos[0][0] < pos[1][0];
