@@ -7,6 +7,9 @@ import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 
 public final class WorldUtil {
+    private WorldUtil() {
+    }
+
     public static double dist(int[] pos1, int[] pos2) {
         return sqrt(pow(pos2[0] - pos1[0], 2) + pow(pos2[2] - pos1[2], 2));
     }

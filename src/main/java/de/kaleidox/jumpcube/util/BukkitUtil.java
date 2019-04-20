@@ -10,6 +10,9 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 public final class BukkitUtil {
+    private BukkitUtil() {
+    }
+
     public static UUID getUuid(CommandSender cmdSender) {
         for (Player onlinePlayer : Bukkit.getOnlinePlayers())
             if (onlinePlayer.getName().equals(cmdSender.getName()))
