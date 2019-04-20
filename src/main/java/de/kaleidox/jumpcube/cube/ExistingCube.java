@@ -5,13 +5,16 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.IntStream;
 
 import de.kaleidox.jumpcube.JumpCube;
 import de.kaleidox.jumpcube.exception.DuplicateCubeException;
 import de.kaleidox.jumpcube.exception.NoSuchCubeException;
 import de.kaleidox.jumpcube.game.GameManager;
 import de.kaleidox.jumpcube.interfaces.Generatable;
+import de.kaleidox.jumpcube.interfaces.Initializable;
 import de.kaleidox.jumpcube.interfaces.Startable;
+import de.kaleidox.jumpcube.util.MathUtil;
 import de.kaleidox.jumpcube.util.WorldUtil;
 
 import org.bukkit.Bukkit;
@@ -37,17 +40,18 @@ import static org.bukkit.Material.GLASS;
 import static org.bukkit.Material.GLASS_PANE;
 import static org.bukkit.Material.LAVA;
 
-public class ExistingCube implements Cube, Generatable, Startable {
+public class ExistingCube implements Cube, Generatable, Startable, Initializable {
     private final static Map<String, Cube> instances = new ConcurrentHashMap<>();
     public final GameManager manager;
     private final String name;
     private final World world;
     private final int[][] pos;
+    private final int minX, maxX, minZ, maxZ;
     private final BlockBar bar;
     private final int galleryHeight = 19;
     private final double density = 0.183; // todo Add changeable density
     private final int height = 110; // todo Add changeable height
-    private final double spacing = 0.2;
+    private final double spacing = 0.25;
     private int[][] tpPos;
     private int tpCycle = -1;
     private long startNanos = -1;
@@ -58,10 +62,17 @@ public class ExistingCube implements Cube, Generatable, Startable {
         this.pos = positions;
         this.bar = bar;
 
+        minX = min(pos[0][0], pos[1][0]);
+        maxX = max(pos[0][0], pos[1][0]);
+        minZ = min(pos[0][2], pos[1][2]);
+        maxZ = max(pos[0][2], pos[1][2]);
+
         this.manager = new GameManager(this);
 
         if (instances.containsKey(name)) throw new DuplicateCubeException(name);
         instances.put(name, this);
+
+        init();
     }
 
     @Override
@@ -102,30 +113,25 @@ public class ExistingCube implements Cube, Generatable, Startable {
         player.teleport(location.add(0, 1.2, 0));
     }
 
-    public void generateFull() {
+    public synchronized void generateFull() {
         startNanos = nanoTime();
 
         final int maxY = max(pos[0][1], pos[1][1]);
         final boolean smallX = pos[0][0] < pos[1][0];
         final boolean smallZ = pos[0][2] < pos[1][2];
 
-        int minX = min(pos[0][0], pos[1][0]);
-        int maxX = max(pos[0][0], pos[1][0]);
-        int minZ = min(pos[0][2], pos[1][2]);
-        int maxZ = max(pos[0][2], pos[1][2]);
-
         int x, y, z;
 
-        for (x = minX; x < maxX; x++)
-            for (z = minZ; z < maxZ; z++)
+        for (x = minX; x <= maxX; x++)
+            for (z = minZ; z <= maxZ; z++)
                 for (y = 255; y > 0; y--)
                     world.getBlockAt(x, y, z).setType(AIR);
 
         for (int off : new int[]{0, 1, 2}) {
-            minX = min(pos[0][0], pos[1][0]) + off;
-            maxX = max(pos[0][0], pos[1][0]) - off;
-            minZ = min(pos[0][2], pos[1][2]) + off;
-            maxZ = max(pos[0][2], pos[1][2]) - off;
+            final int minXloop = min(pos[0][0], pos[1][0]) + off;
+            final int maxXloop = max(pos[0][0], pos[1][0]) - off;
+            final int minZloop = min(pos[0][2], pos[1][2]) + off;
+            final int maxZloop = max(pos[0][2], pos[1][2]) - off;
 
             for (x = minX; x <= maxX; x++)
                 for (z = minZ; z <= maxZ; z++) {
@@ -154,7 +160,7 @@ public class ExistingCube implements Cube, Generatable, Startable {
     }
 
     @Override
-    public void generate() {
+    public synchronized void generate() {
         if (startNanos == -1) startNanos = nanoTime();
 
         final int spaceX = (int) (Math.abs(pos[1][0] - pos[0][0]) * spacing);
@@ -162,17 +168,28 @@ public class ExistingCube implements Cube, Generatable, Startable {
         final boolean smallX = pos[0][0] < pos[1][0];
         final boolean smallZ = pos[0][2] < pos[1][2];
 
-        int minX = min(pos[0][0], pos[1][0]) + spaceX;
-        int maxX = max(pos[0][0], pos[1][0]) - spaceX;
-        int minZ = min(pos[0][2], pos[1][2]) + spaceZ;
-        int maxZ = max(pos[0][2], pos[1][2]) - spaceZ;
-
         int x, y, z;
 
-        //todo: remove starting bridges
+        IntStream.range(2, MathUtil.mid(spaceX, spaceZ))
+                .forEach(off -> {
+                    final int minXoff = minX + off;
+                    final int maxXoff = maxX - off;
+                    final int minZoff = minZ + off;
+                    final int maxZoff = maxZ - off;
 
-        for (x = minX; x < maxX; x++)
-            for (z = minZ; z < maxZ; z++)
+                    int x_, y_ = galleryHeight, z_;
+
+                    for (x_ = minXoff; x_ <= maxXoff; x_++)
+                        for (z_ = minZoff; z_ <= maxZoff; z_++)
+                            if (off == 2 && (x_ == minXoff || x_ == maxXoff || z_ == minZoff || z_ == maxZoff))
+                                // renew glass panes
+                                world.getBlockAt(x_, y_ + 1, z_).setType(GLASS_PANE);
+                            else // remove gallery extensions
+                                world.getBlockAt(x_, y_, z_).setType(AIR);
+                });
+
+        for (x = minX + spaceX; x <= maxX - spaceX; x++)
+            for (z = minZ + spaceZ; z <= maxZ - spaceZ; z++)
                 for (y = 10; y < height; y++)
                     if (JumpCube.rng.nextDouble() % 1 > density) world.getBlockAt(x, y, z).setType(AIR);
                     else world.getBlockAt(x, y, z).setType(bar.getRandomMaterial(CUBE));
@@ -183,9 +200,27 @@ public class ExistingCube implements Cube, Generatable, Startable {
         startNanos = -1;
     }
 
-    @Override
-    public void start() {
+    public synchronized void bridges() {
 
+    }
+
+    public synchronized void prepare() {
+        generate();
+    }
+
+    @Override
+    public synchronized void start() {
+        bridges();
+    }
+
+    @Override
+    public void init() {
+        this.tpPos = new int[][]{
+                new int[]{minX + 1, galleryHeight + 1, minZ + 1},
+                new int[]{maxX - 1, galleryHeight + 1, maxZ - 1},
+                new int[]{minX + 1, galleryHeight + 1, maxZ - 1},
+                new int[]{maxX - 1, galleryHeight + 1, minZ + 1}
+        };
     }
 
     @Nullable
