@@ -197,7 +197,7 @@ public class ExistingCube implements Cube, Generatable, Startable {
         return instances.containsKey(name);
     }
 
-    public static Cube getSelection(Player player) {
+    public static Cube getSelection(Player player) throws NoSuchCubeException {
         assert JumpCube.getInstance() != null;
 
         return Optional.ofNullable(JumpCube.getInstance().selections.get(player.getUniqueId()))
