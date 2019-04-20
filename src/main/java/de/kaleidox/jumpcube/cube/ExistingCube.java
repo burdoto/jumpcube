@@ -8,7 +8,7 @@ import de.kaleidox.jumpcube.JumpCube;
 import de.kaleidox.jumpcube.exception.DuplicateCubeException;
 import de.kaleidox.jumpcube.game.GameManager;
 import de.kaleidox.jumpcube.util.BukkitUtil;
-import de.kaleidox.jumpcube.world.Generatable;
+import de.kaleidox.jumpcube.interfaces.Generatable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

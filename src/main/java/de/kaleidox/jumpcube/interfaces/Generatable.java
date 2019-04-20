@@ -1,4 +1,4 @@
-package de.kaleidox.jumpcube.world;
+package de.kaleidox.jumpcube.interfaces;
 
 public interface Generatable {
     void generate();
