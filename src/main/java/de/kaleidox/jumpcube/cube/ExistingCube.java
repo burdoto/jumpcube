@@ -57,6 +57,8 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
     private long startNanos = -1;
 
     private ExistingCube(String name, World world, int[][] positions, BlockBar bar) {
+        if (instances.containsKey(name)) throw new DuplicateCubeException(name);
+
         this.name = name;
         this.world = world;
         this.pos = positions;
@@ -69,7 +71,6 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
 
         this.manager = new GameManager(this);
 
-        if (instances.containsKey(name)) throw new DuplicateCubeException(name);
         instances.put(name, this);
 
         init();
