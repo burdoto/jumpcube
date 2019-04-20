@@ -6,8 +6,8 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.IntStream;
 
 import de.kaleidox.jumpcube.chat.Chat;
 import de.kaleidox.jumpcube.cube.ExistingCube;
@@ -17,6 +17,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static de.kaleidox.jumpcube.chat.Chat.message;
 import static de.kaleidox.jumpcube.chat.MessageLevel.INFO;
 import static de.kaleidox.jumpcube.chat.MessageLevel.WARN;
@@ -25,10 +26,10 @@ public class GameManager {
     private final ExistingCube cube;
     private final List<UUID> attemptedJoin = new ArrayList<>();
     private final List<Player> joined = new ArrayList<>();
+    private final int baseTime = 30;
     private int remaining = 30;
     private ScheduledExecutorService scheduler;
     private AtomicReference<ScheduledFuture<?>> timeBroadcastFuture;
-    private Runnable broadcastRemaining = new BroadcastRemaining();
 
     public GameManager(ExistingCube cube) {
         this.cube = cube;
@@ -55,31 +56,27 @@ public class GameManager {
     private void startTimer() {
         this.scheduler = Executors.newSingleThreadScheduledExecutor();
 
-        timeBroadcastFuture.set(
-                scheduler.scheduleAtFixedRate(
-                        () -> {
-                            broadcastRemaining.run();
+        assert baseTime % 10 == 0;
 
-                            if (remaining < 5) {
-                                timeBroadcastFuture.get()
-                                        .cancel(false);
-                                timeBroadcastFuture.set(
-                                        scheduler.scheduleAtFixedRate(
-                                                broadcastRemaining, 0, 1, TimeUnit.SECONDS
-                                        )
-                                );
-                            }
-                        }, 0, 5, TimeUnit.SECONDS
-                )
-        );
+        IntStream.range(1, baseTime / 10)
+                .forEach(x -> {
+                    scheduler.schedule(new BroadcastRemaining(x), baseTime - x, SECONDS);
+                    scheduler.schedule(new BroadcastRemaining(x * 10), baseTime - (x * 10), SECONDS);
+                });
     }
 
     private class BroadcastRemaining implements Runnable {
+        private final int val;
+
+        private BroadcastRemaining(int val) {
+            this.val = val;
+        }
+
         @Override
         public void run() {
             Chat.broadcast(INFO, "Time remaining until cube "
                     + ChatColor.BLUE + cube.getCubeName() + INFO.chatColor + " will start: "
-                    + ChatColor.LIGHT_PURPLE + remaining + " seconds");
+                    + ChatColor.LIGHT_PURPLE + val + " seconds");
         }
     }
 }
