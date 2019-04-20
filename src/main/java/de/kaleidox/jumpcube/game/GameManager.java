@@ -43,7 +43,7 @@ public class GameManager implements Startable {
             message(sender, INFO, "Joining cube %s...", cube.getCubeName());
 
             cube.teleportIn(BukkitUtil.getPlayer(sender));
-            startTimer();
+            if (scheduler == null) startTimer();
         } else {
             // warn user
             message(sender, WARN, "Warning: You might die in the game! " +
