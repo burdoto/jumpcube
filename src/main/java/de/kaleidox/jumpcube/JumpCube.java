@@ -15,13 +15,13 @@ import de.kaleidox.jumpcube.cube.CubeCreationTool;
 import de.kaleidox.jumpcube.cube.ExistingCube;
 import de.kaleidox.jumpcube.exception.InnerCommandException;
 import de.kaleidox.jumpcube.exception.InvalidArgumentCountException;
+import de.kaleidox.jumpcube.exception.NoSuchCubeException;
 import de.kaleidox.jumpcube.util.BukkitUtil;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -29,7 +29,6 @@ import org.jetbrains.annotations.Nullable;
 import static de.kaleidox.jumpcube.chat.Chat.message;
 import static de.kaleidox.jumpcube.chat.MessageLevel.ERROR;
 import static de.kaleidox.jumpcube.chat.MessageLevel.INFO;
-import static de.kaleidox.jumpcube.cube.ExistingCube.MAP;
 
 public class JumpCube extends JavaPlugin {
     public static final Random rng = new Random();
@@ -144,7 +143,7 @@ public class JumpCube extends JavaPlugin {
 
     private void subCommand(CommandSender sender, String subCommand, String[] args) {
         final UUID senderUuid = BukkitUtil.getUuid(sender);
-        final Cube sel = getSelection(BukkitUtil.getPlayer(sender));
+        final Cube sel = ExistingCube.getSelection(BukkitUtil.getPlayer(sender));
 
         switch (subCommand.toLowerCase()) {
             case "create":
@@ -176,11 +175,7 @@ public class JumpCube extends JavaPlugin {
                     message(sender, INFO, "Cube " + args[0] + " is already selected!");
                     return;
                 }
-
-                if (!ExistingCube.exists(args[0])) {
-                    message(sender, ERROR, "Cube " + args[0] + " does not exist!");
-                    return;
-                }
+                if (!ExistingCube.exists(args[0])) throw new NoSuchCubeException(args[0]);
 
                 ExistingCube cube = ExistingCube.get(args[0]);
                 assert cube != null;
@@ -231,16 +226,6 @@ public class JumpCube extends JavaPlugin {
                 ((ExistingCube) sel).manager.start();
                 return;
         }
-    }
-
-    private Cube getSelection(Player player) {
-        return Optional.ofNullable(selections.get(player.getUniqueId()))
-                .orElseGet(() -> {
-                    if (MAP.size() == 1) return MAP.entrySet().iterator().next().getValue();
-
-                    else throw new InnerCommandException(ERROR, "Could not auto-select cube.") {
-                    };
-                });
     }
 
     private void messagePerm(CommandSender sender, String permission) {

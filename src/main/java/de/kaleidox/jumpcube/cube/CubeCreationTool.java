@@ -68,6 +68,11 @@ public class CubeCreationTool implements Cube {
         return bar;
     }
 
+    @Override
+    public World getWorld() {
+        return world;
+    }
+
     public ExistingCube create() {
         assert JumpCube.getInstance() != null;
 

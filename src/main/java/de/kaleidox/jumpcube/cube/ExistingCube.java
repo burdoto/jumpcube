@@ -1,11 +1,14 @@
 package de.kaleidox.jumpcube.cube;
 
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import de.kaleidox.jumpcube.JumpCube;
 import de.kaleidox.jumpcube.exception.DuplicateCubeException;
+import de.kaleidox.jumpcube.exception.NoSuchCubeException;
 import de.kaleidox.jumpcube.game.GameManager;
 import de.kaleidox.jumpcube.interfaces.Generatable;
 import de.kaleidox.jumpcube.interfaces.Startable;
@@ -27,13 +30,15 @@ import static de.kaleidox.jumpcube.chat.MessageLevel.INFO;
 import static de.kaleidox.jumpcube.cube.BlockBar.MaterialGroup.CUBE;
 import static de.kaleidox.jumpcube.cube.BlockBar.MaterialGroup.GALLERY;
 import static de.kaleidox.jumpcube.cube.BlockBar.MaterialGroup.WALLS;
+import static de.kaleidox.jumpcube.util.WorldUtil.mid;
+import static de.kaleidox.jumpcube.util.WorldUtil.xyz;
 import static org.bukkit.Material.AIR;
 import static org.bukkit.Material.GLASS;
 import static org.bukkit.Material.GLASS_PANE;
 import static org.bukkit.Material.LAVA;
 
 public class ExistingCube implements Cube, Generatable, Startable {
-    public final static Map<String, Cube> MAP = new ConcurrentHashMap<>();
+    private final static Map<String, Cube> instances = new ConcurrentHashMap<>();
     public final GameManager manager;
     private final String name;
     private final World world;
@@ -55,8 +60,8 @@ public class ExistingCube implements Cube, Generatable, Startable {
 
         this.manager = new GameManager(this);
 
-        if (MAP.containsKey(name)) throw new DuplicateCubeException(name);
-        MAP.put(name, this);
+        if (instances.containsKey(name)) throw new DuplicateCubeException(name);
+        instances.put(name, this);
     }
 
     @Override
@@ -69,7 +74,7 @@ public class ExistingCube implements Cube, Generatable, Startable {
         assert JumpCube.getInstance() != null;
 
         // remove from maps
-        MAP.remove(name, this);
+        instances.remove(name, this);
         JumpCube.getInstance().selections.forEach((key, value) -> {
             if (value == this)
                 JumpCube.getInstance().selections.remove(key, value);
@@ -84,6 +89,11 @@ public class ExistingCube implements Cube, Generatable, Startable {
     @Override
     public BlockBar getBlockBar() {
         return bar;
+    }
+
+    @Override
+    public World getWorld() {
+        return world;
     }
 
     public void teleportIn(Player player) {
@@ -180,11 +190,30 @@ public class ExistingCube implements Cube, Generatable, Startable {
 
     @Nullable
     public static ExistingCube get(String name) {
-        return (ExistingCube) MAP.get(name);
+        return (ExistingCube) instances.get(name);
     }
 
     public static boolean exists(String name) {
-        return MAP.containsKey(name);
+        return instances.containsKey(name);
+    }
+
+    public static Cube getSelection(Player player) {
+        assert JumpCube.getInstance() != null;
+
+        return Optional.ofNullable(JumpCube.getInstance().selections.get(player.getUniqueId()))
+                .orElseGet(() -> {
+                    if (instances.size() == 1) return instances.entrySet().iterator().next().getValue();
+                    return instances.values()
+                            .stream()
+                            .filter(cube -> cube.getWorld().equals(player.getWorld()))
+                            .min(Comparator.comparingDouble(cube ->
+                                    WorldUtil.dist(new int[][]{
+                                            mid(cube.getPositions()),
+                                            xyz(player.getLocation())
+                                    })
+                            ))
+                            .orElseThrow(() -> new NoSuchCubeException(player));
+                });
     }
 
     public static ExistingCube load(final FileConfiguration config, String name, @Nullable BlockBar bar)

@@ -1,5 +1,7 @@
 package de.kaleidox.jumpcube.cube;
 
+import org.bukkit.World;
+
 public interface Cube {
     String getCubeName();
 
@@ -8,4 +10,6 @@ public interface Cube {
     int[][] getPositions();
 
     BlockBar getBlockBar();
+
+    World getWorld();
 }
