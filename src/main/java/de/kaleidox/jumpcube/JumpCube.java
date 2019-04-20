@@ -1,6 +1,8 @@
 package de.kaleidox.jumpcube;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
@@ -29,7 +31,7 @@ import static de.kaleidox.jumpcube.chat.Chat.message;
 import static de.kaleidox.jumpcube.chat.MessageLevel.ERROR;
 import static de.kaleidox.jumpcube.chat.MessageLevel.INFO;
 
-public class JumpCube extends JavaPlugin {
+public final class JumpCube extends JavaPlugin {
     public static final Random rng = new Random();
     @Nullable private static JumpCube instance;
 
@@ -66,6 +68,61 @@ public class JumpCube extends JavaPlugin {
         }
 
         return super.onCommand(sender, command, label, args);
+    }
+
+    @SuppressWarnings("SwitchStatementWithTooFewBranches")
+    @Override
+    public List<String> onTabComplete(
+            @NotNull CommandSender sender,
+            @NotNull Command command,
+            @NotNull String alias,
+            @NotNull String[] args) {
+        List<String> list = new ArrayList<>();
+
+        switch (alias) {
+            case "jumpcube":
+            case "jc":
+                switch (args.length) {
+                    case 1:
+                        if (sender.hasPermission(Permission.USER)) {
+                            list.add("join");
+                            list.add("select");
+                        }
+                        if (sender.hasPermission(Permission.START_EARLY)) {
+                            list.add("start");
+                        }
+                        if (sender.hasPermission(Permission.REGENERATE)) {
+                            list.add("regenerate");
+                            list.add("regenerate-complete");
+                        }
+                        if (sender.hasPermission(Permission.ADMIN)) {
+                            list.add("create");
+                            if (selections.get(BukkitUtil.getUuid(sender)) instanceof CubeCreationTool) {
+                                // user is currently creating a cube
+                                list.add("pos");
+                                list.add("bar");
+                                list.add("confirm");
+                            }
+                        }
+                        break;
+                    case 2:
+                        switch (args[0]) {
+                            case "pos":
+                                if (sender.hasPermission(Permission.ADMIN)) {
+                                    list.add("1");
+                                    list.add("2");
+                                }
+                                break;
+                        }
+                        break;
+                }
+                break;
+        }
+
+        if (args.length > 0)
+            list.removeIf(word -> word.indexOf(args[args.length - 1]) != 0);
+
+        return list;
     }
 
     @Override
@@ -142,7 +199,9 @@ public class JumpCube extends JavaPlugin {
 
     private void subCommand(CommandSender sender, String subCommand, String[] args) {
         final UUID senderUuid = BukkitUtil.getUuid(sender);
-        final Cube sel = ExistingCube.getSelection(BukkitUtil.getPlayer(sender));
+        Cube sel = null;
+        if (subCommand.indexOf("sel") != 0)
+            sel = ExistingCube.getSelection(BukkitUtil.getPlayer(sender));
 
         switch (subCommand.toLowerCase()) {
             case "create":
@@ -185,22 +244,26 @@ public class JumpCube extends JavaPlugin {
             case "pos1":
             case "pos2":
                 if (!checkPerm(sender, Permission.ADMIN)) return;
+                assert sel != null;
                 CubeCreationTool.Commands.pos(sender, sel, subCommand, args);
                 return;
             case "bar":
                 if (!checkPerm(sender, Permission.ADMIN)) return;
                 if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
+                assert sel != null;
                 CubeCreationTool.Commands.bar(sender, sel, args);
                 return;
             case "confirm":
                 if (!checkPerm(sender, Permission.ADMIN)) return;
                 if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
+                assert sel != null;
                 CubeCreationTool.Commands.confirm(sender, sel);
                 return;
             // Game commands
             case "regenerate":
             case "regen":
                 if (!checkPerm(sender, Permission.REGENERATE)) return;
+                assert sel != null;
                 if (!validateSelection(sender, sel)) return;
                 if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
                 ExistingCube.Commands.regenerate(sender, sel, false);
@@ -208,18 +271,21 @@ public class JumpCube extends JavaPlugin {
             case "regenerate-complete":
             case "regen-complete":
                 if (!checkPerm(sender, Permission.REGENERATE)) return;
+                assert sel != null;
                 if (!validateSelection(sender, sel)) return;
                 if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
                 ExistingCube.Commands.regenerate(sender, sel, true);
                 return;
             case "join":
                 if (!checkPerm(sender, Permission.USER)) return;
+                assert sel != null;
                 if (!validateSelection(sender, sel)) return;
                 if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
                 ((ExistingCube) sel).manager.join(sender);
                 return;
             case "start":
                 if (!checkPerm(sender, Permission.START_EARLY)) return;
+                assert sel != null;
                 if (!validateSelection(sender, sel)) return;
                 if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
                 ((ExistingCube) sel).manager.start();
