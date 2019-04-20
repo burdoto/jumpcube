@@ -202,17 +202,22 @@ public class ExistingCube implements Cube, Generatable, Startable {
 
         return Optional.ofNullable(JumpCube.getInstance().selections.get(player.getUniqueId()))
                 .orElseGet(() -> {
-                    if (instances.size() == 1) return instances.entrySet().iterator().next().getValue();
-                    return instances.values()
-                            .stream()
-                            .filter(cube -> cube.getWorld().equals(player.getWorld()))
-                            .min(Comparator.comparingDouble(cube ->
-                                    WorldUtil.dist(new int[][]{
-                                            mid(cube.getPositions()),
-                                            xyz(player.getLocation())
-                                    })
-                            ))
-                            .orElseThrow(() -> new NoSuchCubeException(player));
+                    Cube sel = null;
+                    if (instances.size() == 1) sel = instances.entrySet().iterator().next().getValue();
+                    if (sel == null)
+                        sel = instances.values()
+                                .stream()
+                                .filter(cube -> cube.getWorld().equals(player.getWorld()))
+                                .min(Comparator.comparingDouble(cube ->
+                                        WorldUtil.dist(new int[][]{
+                                                mid(cube.getPositions()),
+                                                xyz(player.getLocation())
+                                        })
+                                ))
+                                .orElseThrow(() -> new NoSuchCubeException(player));
+                    JumpCube.getInstance().selections.put(player.getUniqueId(), sel);
+                    message(player, INFO, "Cube %s was automatically selected!", sel.getCubeName());
+                    return sel;
                 });
     }
 
