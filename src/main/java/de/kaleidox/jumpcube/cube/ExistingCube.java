@@ -92,7 +92,6 @@ public class ExistingCube implements Cube, Generatable, Startable {
         player.teleport(location.add(0, 1.2, 0));
     }
 
-    @SuppressWarnings("ConstantConditions")
     public void generateFull() {
         startNanos = nanoTime();
 
