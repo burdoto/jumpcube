@@ -9,16 +9,15 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
-import de.kaleidox.jumpcube.chat.Chat;
 import de.kaleidox.jumpcube.cube.ExistingCube;
 import de.kaleidox.jumpcube.interfaces.Startable;
 import de.kaleidox.jumpcube.util.BukkitUtil;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static de.kaleidox.jumpcube.chat.Chat.broadcast;
 import static de.kaleidox.jumpcube.chat.Chat.message;
 import static de.kaleidox.jumpcube.chat.MessageLevel.INFO;
 import static de.kaleidox.jumpcube.chat.MessageLevel.WARN;
@@ -41,7 +40,7 @@ public class GameManager implements Startable {
 
         if (attemptedJoin.removeIf(id -> id.equals(uuid))) {
             // join user
-            message(sender, INFO, "Joining cube " + cube.getCubeName() + "...");
+            message(sender, INFO, "Joining cube %s...", cube.getCubeName());
 
             cube.teleportIn(BukkitUtil.getPlayer(sender));
             startTimer();
@@ -80,9 +79,7 @@ public class GameManager implements Startable {
 
         @Override
         public void run() {
-            Chat.broadcast(INFO, "Time remaining until cube "
-                    + ChatColor.BLUE + cube.getCubeName() + INFO.chatColor + " will start: "
-                    + ChatColor.LIGHT_PURPLE + val + " seconds");
+            broadcast(INFO, "Time remaining until cube %s will start: %s seconds", cube.getCubeName(), val);
         }
     }
 }

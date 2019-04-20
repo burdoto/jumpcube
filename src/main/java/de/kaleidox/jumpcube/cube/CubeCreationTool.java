@@ -5,7 +5,6 @@ import de.kaleidox.jumpcube.exception.InvalidArgumentCountException;
 import de.kaleidox.jumpcube.util.BukkitUtil;
 import de.kaleidox.jumpcube.util.WorldUtil;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
@@ -113,7 +112,7 @@ public class CubeCreationTool implements Cube {
                     || (args.length > 0 && !subCommand.equals("pos")))
                 throw new InvalidArgumentCountException(subCommand.equals("pos") ? 1 : 0, args.length);
             if (subCommand.equals("pos") && !args[0].matches("[12]")) {
-                message(sender, ERROR, "Illegal argument: " + args[0]);
+                message(sender, ERROR, "Illegal argument: %s", args[0]);
                 return;
             }
 
@@ -122,15 +121,15 @@ public class CubeCreationTool implements Cube {
                 case "pos":
                     int argInt = Integer.parseInt(args[0]);
                     ((CubeCreationTool) sel).setPos(argInt, location);
-                    message(sender, INFO, "Position " + argInt + " was set to your current location!");
+                    message(sender, INFO, "Position %s was set to your current location!", argInt);
                     break;
                 case "pos1":
                     ((CubeCreationTool) sel).setPos(1, location);
-                    message(sender, INFO, "Position 1 was set to your current location!");
+                    message(sender, INFO, "Position %s was set to your current location!", 1);
                     break;
                 case "pos2":
                     ((CubeCreationTool) sel).setPos(2, location);
-                    message(sender, INFO, "Position 2 was set to your current location!");
+                    message(sender, INFO, "Position %s was set to your current location!", 2);
                     break;
             }
 
@@ -138,12 +137,9 @@ public class CubeCreationTool implements Cube {
             if (pos[0] != null && pos[1] != null) {
                 double dist = dist(pos);
                 if (dist < 0) dist = dist * -1;
-                if (dist < 32) message(sender, INFO, "Size: " + ERROR.chatColor + (int) dist
-                        + INFO.chatColor + " (Cannot be smaller than 32)");
-                else if (dist > 64) message(sender, INFO, "Size: " + ERROR.chatColor + (int) dist
-                        + INFO.chatColor + " (Cannot be larger than 64)");
-                else message(sender, INFO, "Size: " + ChatColor.GREEN + (int) dist
-                            + INFO.chatColor + " (Even sizes are recommended)");
+                if (dist < 32) message(sender, ERROR, "Size: %s (Cannot be smaller than 32)", (int) dist);
+                else if (dist > 64) message(sender, ERROR, "Size: %s (Cannot be larger than 64)", (int) dist);
+                else message(sender, INFO, "Size: %s (Even sizes are recommended)", (int) dist);
             }
         }
 
@@ -165,17 +161,17 @@ public class CubeCreationTool implements Cube {
             }
 
             if (dist(sel.getPositions()) < 32) {
-                message(sender, ERROR, "Cube must be at least 32 blocks wide!");
+                message(sender, ERROR, "Cube must be at least %s blocks wide!", 32);
                 return;
             } else if (dist(sel.getPositions()) > 64) {
-                message(sender, ERROR, "Cube must cant be wider than 64 blocks!");
+                message(sender, ERROR, "Cube cant be wider than %s blocks!", 64);
                 return;
             }
 
             ExistingCube cube = ((CubeCreationTool) sel).create();
             cube.generateFull();
 
-            message(sender, INFO, "Cube " + sel.getCubeName() + " was created!");
+            message(sender, INFO, "Cube %s was created!", cube.getCubeName());
         }
 
         private static boolean validateEditability(CommandSender sender, Cube sel) {
@@ -184,7 +180,7 @@ public class CubeCreationTool implements Cube {
                 return false;
             }
             if (!(sel instanceof CubeCreationTool)) {
-                message(sender, ERROR, "Cube " + sel.getCubeName() + " is not editable!");
+                message(sender, ERROR, "Cube %s is not editable!", sel.getCubeName());
                 return false;
             }
             return true;

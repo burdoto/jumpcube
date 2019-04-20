@@ -18,7 +18,6 @@ import de.kaleidox.jumpcube.exception.InvalidArgumentCountException;
 import de.kaleidox.jumpcube.exception.NoSuchCubeException;
 import de.kaleidox.jumpcube.util.BukkitUtil;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -50,7 +49,7 @@ public class JumpCube extends JavaPlugin {
                 case "jc":
                     if (!checkPerm(sender, Permission.USER)) return true;
                     if (args.length == 0) {
-                        message(sender, INFO, "JumpCube version 0.0.1");
+                        message(sender, INFO, "JumpCube version %s", "0.0.1");
                         return true;
                     } else if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
                         message(sender, ERROR, "Reloading not yet implemented");
@@ -151,7 +150,7 @@ public class JumpCube extends JavaPlugin {
                 if (args.length != 1) throw new InvalidArgumentCountException(1, args.length);
 
                 if (ExistingCube.exists(args[0])) {
-                    message(sender, ERROR, "A cube with that name already exists!");
+                    message(sender, ERROR, "A cube with the name %s already exists!", args[0]);
                     return;
                 }
 
@@ -164,7 +163,7 @@ public class JumpCube extends JavaPlugin {
                 CubeCreationTool creationTool = new CubeCreationTool(BukkitUtil.getPlayer(sender));
                 creationTool.setName(args[0]);
                 selections.put(senderUuid, creationTool);
-                message(sender, INFO, "Cube " + args[0] + " created and selected!");
+                message(sender, INFO, "Cube %s creation started!", args[0]);
                 return;
             case "sel":
             case "select":
@@ -172,7 +171,7 @@ public class JumpCube extends JavaPlugin {
                 if (args.length != 1) throw new InvalidArgumentCountException(1, args.length);
 
                 if (sel != null && sel.getCubeName().equals(args[0])) {
-                    message(sender, INFO, "Cube " + args[0] + " is already selected!");
+                    message(sender, INFO, "Cube %s is already selected!", args[0]);
                     return;
                 }
                 if (!ExistingCube.exists(args[0])) throw new NoSuchCubeException(args[0]);
@@ -180,7 +179,7 @@ public class JumpCube extends JavaPlugin {
                 ExistingCube cube = ExistingCube.get(args[0]);
                 assert cube != null;
                 selections.put(senderUuid, cube);
-                message(sender, INFO, "Cube " + args[0] + " selected!");
+                message(sender, INFO, "Cube %s selected!", args[0]);
                 return;
             case "pos":
             case "pos1":
@@ -225,12 +224,14 @@ public class JumpCube extends JavaPlugin {
                 if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
                 ((ExistingCube) sel).manager.start();
                 return;
+            case "test":
+                if (!sender.isOp()) return;
+                for (MessageLevel lvl : MessageLevel.values()) message(sender, lvl, "I am a %s.", "value");
         }
     }
 
     private void messagePerm(CommandSender sender, String permission) {
-        message(BukkitUtil.getPlayer(sender), ERROR,
-                "You are missing the permission: " + ChatColor.GRAY + permission);
+        message(BukkitUtil.getPlayer(sender), ERROR, "You are missing the permission: %s", permission);
     }
 
     @Nullable
@@ -244,7 +245,7 @@ public class JumpCube extends JavaPlugin {
             return false;
         }
         if (!(sel instanceof ExistingCube)) {
-            message(sender, ERROR, "Cube " + sel.getCubeName() + " is not finished!");
+            message(sender, ERROR, "Cube %s is not finished!", sel.getCubeName());
             return false;
         }
         return true;
