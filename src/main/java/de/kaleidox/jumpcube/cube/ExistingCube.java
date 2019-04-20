@@ -98,7 +98,7 @@ public class ExistingCube implements Cube, Generatable, Startable {
 
     public void teleportIn(Player player) {
         if (tpCycle++ > 3) tpCycle = 0;
-        Location location = WorldUtil.getLocation(world, tpPos[tpCycle]);
+        Location location = WorldUtil.location(world, tpPos[tpCycle]);
         player.teleport(location.add(0, 1.2, 0));
     }
 
@@ -208,12 +208,10 @@ public class ExistingCube implements Cube, Generatable, Startable {
                         sel = instances.values()
                                 .stream()
                                 .filter(cube -> cube.getWorld().equals(player.getWorld()))
-                                .min(Comparator.comparingDouble(cube ->
-                                        WorldUtil.dist(new int[][]{
-                                                mid(cube.getPositions()),
-                                                xyz(player.getLocation())
-                                        })
-                                ))
+                                .min(Comparator.comparingDouble(cube -> WorldUtil.dist(
+                                        mid(cube.getPositions()),
+                                        xyz(player.getLocation())
+                                )))
                                 .orElseThrow(() -> new NoSuchCubeException(player));
                     JumpCube.getInstance().selections.put(player.getUniqueId(), sel);
                     message(player, INFO, "Cube %s was automatically selected!", sel.getCubeName());

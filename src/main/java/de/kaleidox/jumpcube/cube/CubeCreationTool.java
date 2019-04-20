@@ -135,7 +135,7 @@ public class CubeCreationTool implements Cube {
 
             int[][] pos = sel.getPositions();
             if (pos[0] != null && pos[1] != null) {
-                double dist = dist(pos);
+                double dist = dist(pos[0], pos[1]);
                 if (dist < 0) dist = dist * -1;
                 if (dist < 32) message(sender, ERROR, "Size: %s (Cannot be smaller than 32)", (int) dist);
                 else if (dist > 64) message(sender, ERROR, "Size: %s (Cannot be larger than 64)", (int) dist);
@@ -160,10 +160,11 @@ public class CubeCreationTool implements Cube {
                 return;
             }
 
-            if (dist(sel.getPositions()) < 32) {
+            int[][] positions = sel.getPositions();
+            if (dist(positions[0], positions[1]) < 32) {
                 message(sender, ERROR, "Cube must be at least %s blocks wide!", 32);
                 return;
-            } else if (dist(sel.getPositions()) > 64) {
+            } else if (dist(positions[0], positions[1]) > 64) {
                 message(sender, ERROR, "Cube cant be wider than %s blocks!", 64);
                 return;
             }
