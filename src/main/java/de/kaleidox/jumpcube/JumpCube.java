@@ -180,8 +180,16 @@ public final class JumpCube extends JavaPlugin {
                 .map(str -> str.split(";"))
                 .map(Arrays::asList)
                 .ifPresent(list -> list.forEach(cubeName -> {
-                    ExistingCube.load(config, cubeName, null);
-                    logger.info("Loaded cube: " + cubeName);
+                    try {
+                        ExistingCube.load(config, cubeName, null);
+                        logger.info("Loaded cube: " + cubeName);
+                    } catch (Throwable t) {
+                        logger.throwing(
+                                ExistingCube.class.getName(),
+                                "load",
+                                new RuntimeException("Error loading cube: " + cubeName, t)
+                        );
+                    }
                 }));
 
         logger.info("JumpCube enabled!");
