@@ -11,7 +11,7 @@ public final class WorldUtil {
         return sqrt(pow(pos[1][0] - pos[0][0], 2) + pow(pos[1][2] - pos[0][2], 2));
     }
 
-    public static int[] getXYZ(Location location) {
+    public static int[] xyz(Location location) {
         return new int[]{location.getBlockX(), location.getBlockY(), location.getBlockZ()};
     }
 

@@ -34,7 +34,7 @@ public class BlockBar implements Generatable {
         else this.materials = Arrays.copyOf(configMaterials, configMaterials.length);
 
         this.world = player.getWorld();
-        this.xyz = WorldUtil.getXYZ(player.getLocation());
+        this.xyz = WorldUtil.xyz(player.getLocation());
 
         generate();
         validate();

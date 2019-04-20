@@ -41,7 +41,7 @@ public class CubeCreationTool implements Cube {
     }
 
     public void setPos(int y, Location location) {
-        pos[y - 1] = WorldUtil.getXYZ(location);
+        pos[y - 1] = WorldUtil.xyz(location);
     }
 
     @Override
