@@ -4,8 +4,8 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import de.kaleidox.jumpcube.exception.InvalidBlockBarException;
-import de.kaleidox.jumpcube.util.BukkitUtil;
 import de.kaleidox.jumpcube.interfaces.Generatable;
+import de.kaleidox.jumpcube.util.BukkitUtil;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
