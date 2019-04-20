@@ -13,7 +13,6 @@ import de.kaleidox.jumpcube.util.BukkitUtil;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -100,11 +99,12 @@ public class ExistingCube implements Cube, Generatable, Startable {
         final int maxY = max(pos[0][1], pos[1][1]);
         final boolean smallX = pos[0][0] < pos[1][0];
         final boolean smallZ = pos[0][2] < pos[1][2];
+
         int minX = min(pos[0][0], pos[1][0]);
         int maxX = max(pos[0][0], pos[1][0]);
         int minZ = min(pos[0][2], pos[1][2]);
         int maxZ = max(pos[0][2], pos[1][2]);
-        
+
         int x, y, z;
 
         for (x = minX; x < maxX; x++)
@@ -148,35 +148,23 @@ public class ExistingCube implements Cube, Generatable, Startable {
     public void generate() {
         if (startNanos == -1) startNanos = nanoTime();
 
+        final int spaceX = (int) (Math.abs(pos[1][0] - pos[0][0]) * spacing);
+        final int spaceZ = (int) (Math.abs(pos[1][2] - pos[0][2]) * spacing);
+        final boolean smallX = pos[0][0] < pos[1][0];
+        final boolean smallZ = pos[0][2] < pos[1][2];
 
-        int highest = (pos[0][1] < pos[1][1] ? pos[1][1] : pos[0][1]);
-        boolean smallX = pos[0][0] < pos[1][0];
-        int offsetX = smallX ? 1 : -1;
-        boolean smallZ = pos[0][2] < pos[1][2];
-        int offsetZ = smallZ ? 1 : -1;
+        int minX = min(pos[0][0], pos[1][0]) + spaceX;
+        int maxX = max(pos[0][0], pos[1][0]) - spaceX;
+        int minZ = min(pos[0][2], pos[1][2]) + spaceZ;
+        int maxZ = max(pos[0][2], pos[1][2]) - spaceZ;
 
-        int sizeX = pos[0][0] - pos[1][0], sizeZ = pos[0][2] - pos[1][2];
-        if (sizeX < 0) sizeX = sizeX * -1;
-        if (sizeZ < 0) sizeZ = sizeZ * -1;
+        int x, y, z;
 
-        final Material[][][] matrix = new Material[sizeX - (int) (sizeX * (spacing * 2))][height][sizeZ - (int) (sizeZ * (spacing * 2))];
-
-        for (int x = 0; x < matrix.length; x++)
-            for (int y = 0; y < matrix[x].length; y++)
-                for (int z = 0; z < matrix[x][y].length; z++) {
-                    if (JumpCube.rng.nextDouble() % 1 > density)
-                        matrix[x][y][z] = AIR;
-                    else matrix[x][y][z] = bar.getRandomMaterial(CUBE);
-                }
-
-        int mX = pos[smallX ? 0 : 1][0] + (int) (sizeX * spacing);
-        int mZ = pos[smallX ? 0 : 1][2] + (int) (sizeZ * spacing);
-        for (int x = 0; x < matrix.length; x++)
-            for (int y = 0; y < matrix[x].length; y++)
-                for (int z = 0; z < matrix[x][y].length; z++) {
-                    int uX = mX + x, uY = y + 10, uZ = mZ + z;
-                    world.getBlockAt(uX, uY, uZ).setType(matrix[x][y][z]);
-                }
+        for (x = minX; x < maxX; x++)
+            for (z = minZ; z < maxZ; z++)
+                for (y = 10; y < height; y++)
+                    if (JumpCube.rng.nextDouble() % 1 > density) world.getBlockAt(x, y, z).setType(AIR);
+                    else world.getBlockAt(x, y, z).setType(bar.getRandomMaterial(CUBE));
 
         assert JumpCube.getInstance() != null;
         JumpCube.getInstance().getLogger().info("Cube " + name + " was generated, took "
