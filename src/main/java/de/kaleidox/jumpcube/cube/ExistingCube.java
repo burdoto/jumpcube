@@ -20,6 +20,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static java.lang.System.nanoTime;
 import static de.kaleidox.jumpcube.chat.Chat.message;
 import static de.kaleidox.jumpcube.chat.MessageLevel.INFO;
@@ -95,7 +97,7 @@ public class ExistingCube implements Cube, Generatable, Startable {
     public void generateFull() {
         startNanos = nanoTime();
 
-        final int highestY = (pos[0][1] < pos[1][1] ? pos[1][1] : pos[0][1]);
+        final int highestY = max(pos[0][1], pos[1][1]);
         final boolean smallX = pos[0][0] < pos[1][0];
         final boolean smallZ = pos[0][2] < pos[1][2];
         int minX, maxX, minZ, maxZ;
@@ -107,10 +109,10 @@ public class ExistingCube implements Cube, Generatable, Startable {
                     world.getBlockAt(x, y, z).setType(AIR);
 
         for (int off : new int[]{0, 1, 2}) {
-            minX = pos[smallX ? 0 : 1][0] + off;
-            maxX = pos[smallX ? 1 : 0][0] - off;
-            minZ = pos[smallZ ? 0 : 1][2] + off;
-            maxZ = pos[smallZ ? 1 : 0][2] - off;
+            minX = min(pos[0][0], pos[1][0]) + off;
+            maxX = max(pos[0][0], pos[1][0]) - off;
+            minZ = min(pos[0][2], pos[1][2]) + off;
+            maxZ = max(pos[0][2], pos[1][2]) - off;
 
             for (x = minX; x <= maxX; x++)
                 for (z = minZ; z <= maxZ; z++) {
