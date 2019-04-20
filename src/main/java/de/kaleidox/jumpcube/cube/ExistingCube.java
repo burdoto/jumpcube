@@ -160,6 +160,8 @@ public class ExistingCube implements Cube, Generatable, Startable {
 
         int x, y, z;
 
+        //todo: remove starting bridges
+
         for (x = minX; x < maxX; x++)
             for (z = minZ; z < maxZ; z++)
                 for (y = 10; y < height; y++)
