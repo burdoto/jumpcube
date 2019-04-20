@@ -14,6 +14,7 @@ import org.bukkit.entity.Player;
 import static de.kaleidox.jumpcube.chat.Chat.message;
 import static de.kaleidox.jumpcube.chat.MessageLevel.ERROR;
 import static de.kaleidox.jumpcube.chat.MessageLevel.INFO;
+import static de.kaleidox.jumpcube.cube.Cube.dist;
 
 public class CubeCreationTool implements Cube {
     public final Player player;
@@ -129,7 +130,7 @@ public class CubeCreationTool implements Cube {
 
             int[][] pos = sel.getPositions();
             if (pos[0] != null && pos[1] != null) {
-                double dist = Cube.dist(pos);
+                double dist = dist(pos);
                 if (dist < 0) dist = dist * -1;
                 if (dist < 32) message(sender, INFO, "Size: " + ERROR.chatColor + (int) dist
                         + INFO.chatColor + " (Cannot be smaller than 32)");
@@ -157,10 +158,10 @@ public class CubeCreationTool implements Cube {
                 return;
             }
 
-            if (Cube.dist(sel.getPositions()) < 32) {
+            if (dist(sel.getPositions()) < 32) {
                 message(sender, ERROR, "Cube must be at least 32 blocks wide!");
                 return;
-            } else if (Cube.dist(sel.getPositions()) > 64) {
+            } else if (dist(sel.getPositions()) > 64) {
                 message(sender, ERROR, "Cube must cant be wider than 64 blocks!");
                 return;
             }
