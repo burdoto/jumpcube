@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import de.kaleidox.jumpcube.JumpCube;
 import de.kaleidox.jumpcube.exception.DuplicateCubeException;
 import de.kaleidox.jumpcube.game.GameManager;
+import de.kaleidox.jumpcube.interfaces.Startable;
 import de.kaleidox.jumpcube.util.BukkitUtil;
 import de.kaleidox.jumpcube.interfaces.Generatable;
 
@@ -30,7 +31,7 @@ import static org.bukkit.Material.GLASS;
 import static org.bukkit.Material.GLASS_PANE;
 import static org.bukkit.Material.LAVA;
 
-public class ExistingCube implements Cube, Generatable {
+public class ExistingCube implements Cube, Generatable, Startable {
     public final static Map<String, Cube> MAP = new ConcurrentHashMap<>();
     public final GameManager manager;
     private final String name;
@@ -174,6 +175,11 @@ public class ExistingCube implements Cube, Generatable {
         JumpCube.getInstance().getLogger().info("Cube " + name + " was generated, took "
                 + (nanoTime() - startNanos) + " nanoseconds.");
         startNanos = -1;
+    }
+
+    @Override
+    public void start() {
+
     }
 
     @Nullable

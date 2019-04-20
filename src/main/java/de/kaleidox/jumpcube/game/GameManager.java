@@ -11,6 +11,7 @@ import java.util.stream.IntStream;
 
 import de.kaleidox.jumpcube.chat.Chat;
 import de.kaleidox.jumpcube.cube.ExistingCube;
+import de.kaleidox.jumpcube.interfaces.Startable;
 import de.kaleidox.jumpcube.util.BukkitUtil;
 
 import org.bukkit.ChatColor;
@@ -22,7 +23,7 @@ import static de.kaleidox.jumpcube.chat.Chat.message;
 import static de.kaleidox.jumpcube.chat.MessageLevel.INFO;
 import static de.kaleidox.jumpcube.chat.MessageLevel.WARN;
 
-public class GameManager {
+public class GameManager implements Startable {
     private final ExistingCube cube;
     private final List<UUID> attemptedJoin = new ArrayList<>();
     private final List<Player> joined = new ArrayList<>();
@@ -51,6 +52,11 @@ public class GameManager {
 
             attemptedJoin.add(uuid);
         }
+    }
+
+    @Override
+    public void start() {
+        cube.start();
     }
 
     private void startTimer() {
