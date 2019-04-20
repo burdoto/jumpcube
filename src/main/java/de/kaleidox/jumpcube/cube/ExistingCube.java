@@ -97,7 +97,7 @@ public class ExistingCube implements Cube, Generatable, Startable {
     public void generateFull() {
         startNanos = nanoTime();
 
-        final int highestY = max(pos[0][1], pos[1][1]);
+        final int maxY = max(pos[0][1], pos[1][1]);
         final boolean smallX = pos[0][0] < pos[1][0];
         final boolean smallZ = pos[0][2] < pos[1][2];
         int minX, maxX, minZ, maxZ;
@@ -118,7 +118,7 @@ public class ExistingCube implements Cube, Generatable, Startable {
                 for (z = minZ; z <= maxZ; z++) {
                     if (x == minX || x == maxX || z == minZ || z == maxZ) {
                         if (off == 0)
-                            for (y = highestY; y > 0; y--)
+                            for (y = maxY; y > 0; y--)
                                 world.getBlockAt(x, y, z).setType(bar.getRandomMaterial(WALLS));
                         else {
                             world.getBlockAt(x, galleryHeight, z).setType(bar.getRandomMaterial(GALLERY));
