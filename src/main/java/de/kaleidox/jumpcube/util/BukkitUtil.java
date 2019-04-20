@@ -4,15 +4,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.Range;
 
-public class BukkitUtil {
+public final class BukkitUtil {
     public static UUID getUuid(CommandSender cmdSender) {
         for (Player onlinePlayer : Bukkit.getOnlinePlayers())
             if (onlinePlayer.getName().equals(cmdSender.getName()))
@@ -40,12 +37,4 @@ public class BukkitUtil {
         return Optional.empty();
     }
 
-    @Range(from = 3, to = 3)
-    public static int[] getXYZ(Location location) {
-        return new int[]{location.getBlockX(), location.getBlockY(), location.getBlockZ()};
-    }
-
-    public static Location getLocation(World world, int[] xyz) {
-        return world.getBlockAt(xyz[0], xyz[1], xyz[2]).getLocation();
-    }
 }

@@ -6,6 +6,7 @@ import java.util.Objects;
 import de.kaleidox.jumpcube.exception.InvalidBlockBarException;
 import de.kaleidox.jumpcube.interfaces.Generatable;
 import de.kaleidox.jumpcube.util.BukkitUtil;
+import de.kaleidox.jumpcube.util.WorldUtil;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -33,7 +34,7 @@ public class BlockBar implements Generatable {
         else this.materials = Arrays.copyOf(configMaterials, configMaterials.length);
 
         this.world = player.getWorld();
-        this.xyz = BukkitUtil.getXYZ(player.getLocation());
+        this.xyz = WorldUtil.getXYZ(player.getLocation());
 
         generate();
         validate();

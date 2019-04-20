@@ -3,6 +3,7 @@ package de.kaleidox.jumpcube.cube;
 import de.kaleidox.jumpcube.JumpCube;
 import de.kaleidox.jumpcube.exception.InvalidArgumentCountException;
 import de.kaleidox.jumpcube.util.BukkitUtil;
+import de.kaleidox.jumpcube.util.WorldUtil;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -14,7 +15,7 @@ import org.bukkit.entity.Player;
 import static de.kaleidox.jumpcube.chat.Chat.message;
 import static de.kaleidox.jumpcube.chat.MessageLevel.ERROR;
 import static de.kaleidox.jumpcube.chat.MessageLevel.INFO;
-import static de.kaleidox.jumpcube.cube.Cube.dist;
+import static de.kaleidox.jumpcube.util.WorldUtil.dist;
 
 public class CubeCreationTool implements Cube {
     public final Player player;
@@ -40,7 +41,7 @@ public class CubeCreationTool implements Cube {
     }
 
     public void setPos(int y, Location location) {
-        pos[y - 1] = BukkitUtil.getXYZ(location);
+        pos[y - 1] = WorldUtil.getXYZ(location);
     }
 
     @Override

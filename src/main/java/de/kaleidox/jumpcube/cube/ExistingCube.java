@@ -9,7 +9,7 @@ import de.kaleidox.jumpcube.exception.DuplicateCubeException;
 import de.kaleidox.jumpcube.game.GameManager;
 import de.kaleidox.jumpcube.interfaces.Generatable;
 import de.kaleidox.jumpcube.interfaces.Startable;
-import de.kaleidox.jumpcube.util.BukkitUtil;
+import de.kaleidox.jumpcube.util.WorldUtil;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -88,7 +88,7 @@ public class ExistingCube implements Cube, Generatable, Startable {
 
     public void teleportIn(Player player) {
         if (tpCycle++ > 3) tpCycle = 0;
-        Location location = BukkitUtil.getLocation(world, tpPos[tpCycle]);
+        Location location = WorldUtil.getLocation(world, tpPos[tpCycle]);
         player.teleport(location.add(0, 1.2, 0));
     }
 
