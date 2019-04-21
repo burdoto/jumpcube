@@ -130,8 +130,8 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
 
         int x, y, z;
 
-        for (x = minX; x <= maxX; x++)
-            for (z = minZ; z <= maxZ; z++)
+        for (x = minX + 1; x < maxX; x++)
+            for (z = minZ + 1; z < maxZ; z++)
                 for (y = 255; y > 0; y--)
                     world.getBlockAt(x, y, z).setType(AIR);
 

@@ -10,6 +10,7 @@ import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
@@ -34,6 +35,7 @@ public class PlayerListener extends ListenerBase implements Listener {
         if (moveTo == null) return;
         int[][] expand = expandVert(cube.getPositions());
         if (!inside(expand, xyz(moveTo))) return;
+        if (!manager.joined.contains(event.getPlayer())) return;
 
         if (moveTo.getBlockY() >= cube.getHeight())
             manager.conclude(event.getPlayer());

@@ -43,7 +43,7 @@ public class GameManager implements Startable, Initializable {
     private final Map<UUID, PrevLoc> prevLocations = new ConcurrentHashMap<>();
     private final ExistingCube cube;
     private final List<UUID> attemptedJoin = new ArrayList<>();
-    private final List<Player> joined = new ArrayList<>();
+    public final List<Player> joined = new ArrayList<>();
     private final int baseTime = 30;
     public boolean activeGame = false;
     private int remaining = 30;
