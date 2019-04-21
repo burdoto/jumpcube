@@ -297,11 +297,7 @@ public final class JumpCube extends JavaPlugin {
                 assert sel != null;
                 if (!validateSelection(sender, sel)) return;
                 if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
-                ((ExistingCube) sel).manager.leaving.add(BukkitUtil.getUuid(sender));
-                Player player = BukkitUtil.getPlayer(sender);
-                player.teleport(player.getBedSpawnLocation() != null
-                        ? player.getBedSpawnLocation()
-                        : player.getBedLocation());
+                ((ExistingCube) sel).manager.leave(sender);
                 return;
             case "start":
                 if (!checkPerm(sender, Permission.START_EARLY)) return;
@@ -342,5 +338,6 @@ public final class JumpCube extends JavaPlugin {
         public static final String REGENERATE = "jumpcube.mod.regenerate";
 
         public static final String ADMIN = "jumpcube.admin";
+        public static final String DEBUG_NOTIFY = "jumpcube.admin.debug";
     }
 }

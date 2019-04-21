@@ -46,4 +46,11 @@ public final class WorldUtil {
         positions[1][1] = 256;
         return positions;
     }
+
+    public static int[][] retract(int[][] pos, int retractBy) {
+        return new int[][]{
+                new int[]{min(pos[0][0], pos[1][0]) + retractBy, pos[0][1], min(pos[0][2], pos[1][2]) + retractBy},
+                new int[]{max(pos[0][0], pos[1][0]) - retractBy, pos[0][1], max(pos[0][2], pos[1][2]) - retractBy}
+        };
+    }
 }

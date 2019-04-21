@@ -2,7 +2,9 @@ package de.kaleidox.jumpcube.game;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -10,6 +12,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
 import de.kaleidox.jumpcube.JumpCube;
+import de.kaleidox.jumpcube.chat.Chat;
 import de.kaleidox.jumpcube.cube.ExistingCube;
 import de.kaleidox.jumpcube.exception.GameRunningException;
 import de.kaleidox.jumpcube.game.listener.PlayerListener;
@@ -19,20 +22,25 @@ import de.kaleidox.jumpcube.interfaces.Startable;
 import de.kaleidox.jumpcube.util.BukkitUtil;
 
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.jetbrains.annotations.Nullable;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static de.kaleidox.jumpcube.JumpCube.Permission.DEBUG_NOTIFY;
 import static de.kaleidox.jumpcube.chat.Chat.broadcast;
 import static de.kaleidox.jumpcube.chat.Chat.message;
 import static de.kaleidox.jumpcube.chat.MessageLevel.HINT;
 import static de.kaleidox.jumpcube.chat.MessageLevel.INFO;
 import static de.kaleidox.jumpcube.chat.MessageLevel.WARN;
+import static de.kaleidox.jumpcube.util.WorldUtil.location;
+import static de.kaleidox.jumpcube.util.WorldUtil.xyz;
 
 public class GameManager implements Startable, Initializable {
     public final List<UUID> leaving = new ArrayList<>();
+    private final Map<UUID, PrevLoc> prevLocations = new ConcurrentHashMap<>();
     private final ExistingCube cube;
     private final List<UUID> attemptedJoin = new ArrayList<>();
     private final List<Player> joined = new ArrayList<>();
@@ -41,13 +49,12 @@ public class GameManager implements Startable, Initializable {
     private int remaining = 30;
     @Nullable private ScheduledExecutorService scheduler;
     private AtomicReference<ScheduledFuture<?>> timeBroadcastFuture;
-
     public GameManager(ExistingCube cube) {
         this.cube = cube;
     }
 
     public void join(CommandSender sender) {
-        if (activeGame) throw new GameRunningException("A game is active in that game!");
+        if (activeGame) throw new GameRunningException("A game is active in that cube!");
 
         UUID uuid = BukkitUtil.getUuid(sender);
 
@@ -56,8 +63,12 @@ public class GameManager implements Startable, Initializable {
             message(sender, INFO, "Joining cube %s...", cube.getCubeName());
             Player player = BukkitUtil.getPlayer(sender);
             player.getInventory().remove(cube.getBlockBar().getPlaceable());
+            prevLocations.put(player.getUniqueId(), new PrevLoc(player));
             cube.teleportIn(player);
+            joined.add(player);
             if (scheduler == null) startTimer();
+            Chat.broadcast(DEBUG_NOTIFY, INFO, "Generating cube...");
+            cube.generate();
         } else {
             // warn user
             message(sender, WARN, "Warning: You might die in the game! " +
@@ -70,10 +81,8 @@ public class GameManager implements Startable, Initializable {
 
     @Override
     public void start() {
-        System.out.println("Game started");
         activeGame = true;
-
-        cube.start();
+        //cube.start();
     }
 
     @Override
@@ -85,13 +94,29 @@ public class GameManager implements Startable, Initializable {
         pluginManager.registerEvents(new PlayerListener(this, cube), JumpCube.instance);
     }
 
-    public void reached(Player player) {
+    public void conclude(@Nullable Player player) {
         if (activeGame) {
             scheduler = null;
             activeGame = false;
 
-            broadcast(HINT, "%s has reached the goal!", player.getDisplayName());
+            if (player != null) broadcast(HINT, "%s has reached the goal!", player.getDisplayName());
+            else broadcast(HINT, "All players left the cube. The game has ended.");
         }
+    }
+
+    public void leave(CommandSender sender) {
+        UUID uuid = BukkitUtil.getUuid(sender);
+        leaving.add(uuid);
+        Player player = BukkitUtil.getPlayer(sender);
+
+        PrevLoc pl = prevLocations.get(player.getUniqueId());
+
+        player.teleport(location(pl.world, pl.location));
+
+        leaving.remove(uuid);
+        joined.remove(player);
+
+        if (joined.size() == 0) conclude(null);
     }
 
     private void startTimer() {
@@ -105,9 +130,18 @@ public class GameManager implements Startable, Initializable {
                     scheduler.schedule(new BroadcastRemaining(x * 10), baseTime - (x * 10), SECONDS);
                 });
 
-        scheduler.schedule(cube::generate, baseTime / 3, SECONDS);
         scheduler.schedule(cube.manager::start, baseTime, SECONDS);
         new BroadcastRemaining(baseTime).run();
+    }
+
+    private class PrevLoc {
+        private final World world;
+        private final int[] location;
+
+        private PrevLoc(Player player) {
+            this.world = player.getWorld();
+            this.location = xyz(player.getLocation());
+        }
     }
 
     private class BroadcastRemaining implements Runnable {

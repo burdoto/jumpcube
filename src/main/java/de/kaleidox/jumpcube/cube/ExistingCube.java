@@ -120,7 +120,7 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
         player.teleport(location.add(0, 1.2, 0));
     }
 
-    public synchronized void generateFull() {
+    public void generateFull() {
         startNanos = nanoTime();
 
         final int maxY = max(pos[0][1], pos[1][1]);
@@ -165,7 +165,7 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
     }
 
     @Override
-    public synchronized void generate() {
+    public void generate() {
         if (startNanos == -1) startNanos = nanoTime();
 
         final int spaceX = (int) (Math.abs(pos[1][0] - pos[0][0]) * spacing);
@@ -203,11 +203,15 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
         JumpCube.instance.getLogger().info("Cube " + name + " was generated, took "
                 + (nanoTime() - startNanos) + " nanoseconds.");
         startNanos = -1;
+
+        start();
     }
 
-    public synchronized void openGates() {
-        final int spaceX = (int) (Math.abs(pos[1][0] - pos[0][0]) * spacing) * 100 / 130;
-        final int spaceZ = (int) (Math.abs(pos[1][2] - pos[0][2]) * spacing) * 100 / 130;
+    @Override
+    public void start() {
+        System.out.println("gen bridge");
+        final int spaceX = (int) (Math.abs(pos[1][0] - pos[0][0]) * spacing);
+        final int spaceZ = (int) (Math.abs(pos[1][2] - pos[0][2]) * spacing);
 
         final int midX = mid(minX, maxX);
         final int midZ = mid(minZ, maxZ);
@@ -217,6 +221,8 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
         final int zDistA = dist(midZ, minZ);
         final int zDistB = dist(midZ, maxZ);
 
+        System.out.println("spaceZ = " + spaceZ);
+
         int otherX = (midX - Integer.compare(xDistA, xDistB));
         (otherX > midX ? IntStream.range(midX, otherX)
                 : (otherX == midX ? IntStream.range(otherX, midX + 1)
@@ -224,8 +230,11 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
                 .forEach(xBridge -> IntStream.range(2, spaceZ)
                         .flatMap(zOff -> IntStream.of(minZ, maxZ)
                                 .map(z -> z == minZ ? z + zOff : z - zOff))
-                        .forEach(zBridge -> world.getBlockAt(xBridge, galleryHeight, zBridge)
-                                .setType(bar.getRandomMaterial(GALLERY))));
+                        .forEach(zBridge -> {
+                            System.out.println("1 -- xBridge = " + xBridge + " && zBridge = " + zBridge);
+                            world.getBlockAt(xBridge, galleryHeight, zBridge)
+                                    .setType(bar.getRandomMaterial(GALLERY));
+                        }));
 
         int otherZ = (midZ - Integer.compare(zDistA, zDistB));
         (otherZ > midZ ? IntStream.range(midZ, otherZ)
@@ -234,18 +243,16 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
                 .forEach(zBridge -> IntStream.range(2, spaceX)
                         .flatMap(xOff -> IntStream.of(minX, maxX)
                                 .map(x -> x == minX ? x + xOff : x - xOff))
-                        .forEach(xBridge -> world.getBlockAt(xBridge, galleryHeight, zBridge)
-                                .setType(bar.getRandomMaterial(GALLERY))));
+                        .forEach(xBridge -> {
+                            System.out.println("2 -- xBridge = " + xBridge + " && zBridge = " + zBridge);
+                            world.getBlockAt(xBridge, galleryHeight, zBridge)
+                                    .setType(bar.getRandomMaterial(GALLERY));
+                        }));
 
         world.getBlockAt(midX, galleryHeight + 1, minZ + 2).setType(AIR);
         world.getBlockAt(midX, galleryHeight + 1, maxZ - 2).setType(AIR);
         world.getBlockAt(minX + 2, galleryHeight + 1, midZ).setType(AIR);
         world.getBlockAt(maxZ - 2, galleryHeight + 1, midZ).setType(AIR);
-    }
-
-    @Override
-    public synchronized void start() {
-        openGates();
     }
 
     @Override

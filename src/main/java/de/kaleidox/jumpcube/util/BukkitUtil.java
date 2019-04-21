@@ -2,6 +2,9 @@ package de.kaleidox.jumpcube.util;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import de.kaleidox.jumpcube.JumpCube;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -11,6 +14,13 @@ import org.jetbrains.annotations.Nullable;
 
 public final class BukkitUtil {
     private BukkitUtil() {
+    }
+
+    public static int schedule(Runnable runnable, long time, TimeUnit unit) {
+        assert JumpCube.instance != null;
+
+        return Bukkit.getScheduler()
+                .scheduleSyncDelayedTask(JumpCube.instance, runnable, unit.toSeconds(time) * 20);
     }
 
     public static UUID getUuid(CommandSender cmdSender) {

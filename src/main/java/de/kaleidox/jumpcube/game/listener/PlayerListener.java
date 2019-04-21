@@ -4,6 +4,7 @@ import de.kaleidox.jumpcube.JumpCube;
 import de.kaleidox.jumpcube.cube.Cube;
 import de.kaleidox.jumpcube.game.GameManager;
 import de.kaleidox.jumpcube.util.BukkitUtil;
+import de.kaleidox.jumpcube.util.WorldUtil;
 
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
@@ -13,6 +14,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
 import static de.kaleidox.jumpcube.chat.Chat.message;
+import static de.kaleidox.jumpcube.chat.MessageLevel.ERROR;
 import static de.kaleidox.jumpcube.chat.MessageLevel.WARN;
 import static de.kaleidox.jumpcube.util.WorldUtil.expandVert;
 import static de.kaleidox.jumpcube.util.WorldUtil.inside;
@@ -34,7 +36,12 @@ public class PlayerListener extends ListenerBase implements Listener {
         if (!inside(expand, xyz(moveTo))) return;
 
         if (moveTo.getBlockY() >= cube.getHeight())
-            manager.reached(event.getPlayer());
+            manager.conclude(event.getPlayer());
+        if (!manager.activeGame)
+            if (inside(WorldUtil.retract(expand, 3), xyz(moveTo))) {
+                event.setCancelled(true);
+                message(event.getPlayer(), ERROR, "The game didn't start yet!");
+            }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

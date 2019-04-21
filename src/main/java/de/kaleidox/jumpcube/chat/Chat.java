@@ -25,6 +25,11 @@ public final class Chat {
                 + String.format(format, (Object[]) formatStrings(msgLevel, vars)));
     }
 
+    public static void broadcast(String permission, MessageLevel msgLevel, String format, Object... vars) {
+        Bukkit.broadcast(prefix() + msgLevel.chatColor
+                + String.format(format, (Object[]) formatStrings(msgLevel, vars)), permission);
+    }
+
     private static String prefix() {
         return ChatColor.DARK_GRAY + "[" +
                 ChatColor.BLUE + "JumpCube" +
