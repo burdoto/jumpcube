@@ -49,6 +49,7 @@ public class GameManager implements Startable, Initializable {
     private int remaining = 30;
     @Nullable private ScheduledExecutorService scheduler;
     private AtomicReference<ScheduledFuture<?>> timeBroadcastFuture;
+
     public GameManager(ExistingCube cube) {
         this.cube = cube;
     }
