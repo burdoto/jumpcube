@@ -13,4 +13,8 @@ public final class MathUtil {
     public static int dist(int x, int y) {
         return abs(y - x);
     }
+
+    public static boolean raising(int minimum, int middle, int maximum) {
+        return minimum <= middle && middle <= maximum;
+    }
 }

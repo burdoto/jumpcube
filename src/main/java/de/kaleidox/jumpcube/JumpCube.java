@@ -23,6 +23,7 @@ import de.kaleidox.jumpcube.util.BukkitUtil;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -86,6 +87,7 @@ public final class JumpCube extends JavaPlugin {
                     case 1:
                         if (sender.hasPermission(Permission.USER)) {
                             list.add("join");
+                            list.add("leave");
                             list.add("select");
                         }
                         if (sender.hasPermission(Permission.START_EARLY)) {
@@ -291,6 +293,16 @@ public final class JumpCube extends JavaPlugin {
                 if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
                 ((ExistingCube) sel).manager.join(sender);
                 return;
+            case "leave":
+                assert sel != null;
+                if (!validateSelection(sender, sel)) return;
+                if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
+                ((ExistingCube) sel).manager.leaving.add(BukkitUtil.getUuid(sender));
+                Player player = BukkitUtil.getPlayer(sender);
+                player.teleport(player.getBedSpawnLocation() != null
+                        ? player.getBedSpawnLocation()
+                        : player.getBedLocation());
+                return;
             case "start":
                 if (!checkPerm(sender, Permission.START_EARLY)) return;
                 assert sel != null;
@@ -324,7 +336,9 @@ public final class JumpCube extends JavaPlugin {
         public static final String USER = "jumpcube.user";
 
         public static final String START_EARLY = "jumpcube.vip.earlystart";
+        public static final String BRING_PLACEABLE = "jumpcube.vip.bringplaceable";
 
+        public static final String TELEPORT_OUT = "jumpcube.mod.teleport";
         public static final String REGENERATE = "jumpcube.mod.regenerate";
 
         public static final String ADMIN = "jumpcube.admin";

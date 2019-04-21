@@ -9,6 +9,8 @@ public interface Cube {
 
     int[][] getPositions();
 
+    int getHeight();
+
     BlockBar getBlockBar();
 
     World getWorld();

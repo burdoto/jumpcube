@@ -11,6 +11,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
+import static java.lang.Math.max;
 import static de.kaleidox.jumpcube.chat.Chat.message;
 import static de.kaleidox.jumpcube.chat.MessageLevel.ERROR;
 import static de.kaleidox.jumpcube.chat.MessageLevel.INFO;
@@ -60,6 +61,11 @@ public class CubeCreationTool implements Cube {
     @Override
     public int[][] getPositions() {
         return pos;
+    }
+
+    @Override
+    public int getHeight() {
+        return max(pos[0][1], pos[1][1]);
     }
 
     @Override

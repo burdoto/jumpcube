@@ -100,6 +100,10 @@ public class BlockBar implements Generatable {
         config.set(basePath + "pos.z", xyz[2]);
     }
 
+    public Material getPlaceable() {
+        return materials[3];
+    }
+
     public static void initConfig(FileConfiguration config) {
         configMaterials[0] = BukkitUtil.getMaterial(config.getString("cube.defaults.bar.a"))
                 .orElse(Material.RED_WOOL);

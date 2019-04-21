@@ -100,6 +100,11 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
     }
 
     @Override
+    public int getHeight() {
+        return height;
+    }
+
+    @Override
     public BlockBar getBlockBar() {
         return bar;
     }
@@ -200,7 +205,7 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
         startNanos = -1;
     }
 
-    public synchronized void bridges() {
+    public synchronized void openGates() {
         final int spaceX = (int) (Math.abs(pos[1][0] - pos[0][0]) * spacing) * 100 / 130;
         final int spaceZ = (int) (Math.abs(pos[1][2] - pos[0][2]) * spacing) * 100 / 130;
 
@@ -238,17 +243,15 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
         world.getBlockAt(maxZ - 2, galleryHeight + 1, midZ).setType(AIR);
     }
 
-    public synchronized void prepare() {
-        generate();
-    }
-
     @Override
     public synchronized void start() {
-        bridges();
+        openGates();
     }
 
     @Override
     public void init() {
+        manager.init();
+
         this.tpPos = new int[][]{
                 new int[]{minX + 1, galleryHeight + 1, minZ + 1},
                 new int[]{maxX - 1, galleryHeight + 1, maxZ - 1},

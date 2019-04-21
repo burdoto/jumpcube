@@ -3,6 +3,7 @@ package de.kaleidox.jumpcube.chat;
 import org.bukkit.ChatColor;
 
 public enum MessageLevel {
+    HINT(ChatColor.GREEN, ChatColor.AQUA),
     INFO(ChatColor.AQUA, ChatColor.GREEN),
     WARN(ChatColor.YELLOW, ChatColor.RED),
     ERROR(ChatColor.RED, ChatColor.LIGHT_PURPLE),
