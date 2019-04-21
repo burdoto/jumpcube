@@ -73,10 +73,10 @@ public class CubeCreationTool implements Cube {
     }
 
     public ExistingCube create() {
-        assert JumpCube.getInstance() != null;
+        assert JumpCube.instance != null;
 
         final String basePath = "cubes." + name + ".";
-        final FileConfiguration config = JumpCube.getInstance().getConfig();
+        final FileConfiguration config = JumpCube.instance.getConfig();
 
         // save world
         config.set(basePath + "world", world.getName());
@@ -99,7 +99,7 @@ public class CubeCreationTool implements Cube {
                 ? (config.getString("cubes.created") + ";")
                 : "") + name);
 
-        JumpCube.getInstance().saveConfig();
+        JumpCube.instance.saveConfig();
 
         return ExistingCube.load(config, name, bar);
     }

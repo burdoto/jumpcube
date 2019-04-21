@@ -83,13 +83,13 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
 
     @Override
     public void delete() {
-        assert JumpCube.getInstance() != null;
+        assert JumpCube.instance != null;
 
         // remove from maps
         instances.remove(name, this);
-        JumpCube.getInstance().selections.forEach((key, value) -> {
+        JumpCube.instance.selections.forEach((key, value) -> {
             if (value == this)
-                JumpCube.getInstance().selections.remove(key, value);
+                JumpCube.instance.selections.remove(key, value);
         });
     }
 
@@ -195,8 +195,8 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
                     if (JumpCube.rng.nextDouble() % 1 > density) world.getBlockAt(x, y, z).setType(AIR);
                     else world.getBlockAt(x, y, z).setType(bar.getRandomMaterial(CUBE));
 
-        assert JumpCube.getInstance() != null;
-        JumpCube.getInstance().getLogger().info("Cube " + name + " was generated, took "
+        assert JumpCube.instance != null;
+        JumpCube.instance.getLogger().info("Cube " + name + " was generated, took "
                 + (nanoTime() - startNanos) + " nanoseconds.");
         startNanos = -1;
     }
@@ -234,9 +234,9 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
     }
 
     public static Cube getSelection(Player player) throws NoSuchCubeException {
-        assert JumpCube.getInstance() != null;
+        assert JumpCube.instance != null;
 
-        return Optional.ofNullable(JumpCube.getInstance().selections.get(player.getUniqueId()))
+        return Optional.ofNullable(JumpCube.instance.selections.get(player.getUniqueId()))
                 .orElseGet(() -> {
                     Cube sel = null;
                     if (instances.size() == 1) sel = instances.entrySet().iterator().next().getValue();
@@ -249,7 +249,7 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
                                         xyz(player.getLocation())
                                 )))
                                 .orElseThrow(() -> new NoSuchCubeException(player));
-                    JumpCube.getInstance().selections.put(player.getUniqueId(), sel);
+                    JumpCube.instance.selections.put(player.getUniqueId(), sel);
                     message(player, INFO, "Cube %s was automatically selected!", sel.getCubeName());
                     return sel;
                 });

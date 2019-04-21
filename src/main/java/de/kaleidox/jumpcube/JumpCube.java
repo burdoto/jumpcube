@@ -33,7 +33,7 @@ import static de.kaleidox.jumpcube.chat.MessageLevel.INFO;
 
 public final class JumpCube extends JavaPlugin {
     public static final Random rng = new Random();
-    @Nullable private static JumpCube instance;
+    @Nullable public static JumpCube instance;
 
     public Map<UUID, Cube> selections = new ConcurrentHashMap<>();
     private Logger logger;
@@ -306,11 +306,6 @@ public final class JumpCube extends JavaPlugin {
 
     private void messagePerm(CommandSender sender, String permission) {
         message(BukkitUtil.getPlayer(sender), ERROR, "You are missing the permission: %s", permission);
-    }
-
-    @Nullable
-    public static JumpCube getInstance() {
-        return instance;
     }
 
     private static boolean validateSelection(CommandSender sender, Cube sel) {
