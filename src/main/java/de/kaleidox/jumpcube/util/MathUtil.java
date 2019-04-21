@@ -1,10 +1,16 @@
 package de.kaleidox.jumpcube.util;
 
+import static java.lang.Math.abs;
+
 public final class MathUtil {
     private MathUtil() {
     }
 
     public static int mid(int x, int y) {
         return x / 2 + y / 2 + (x % 2 + y % 2) / 2;
+    }
+
+    public static int dist(int x, int y) {
+        return abs(y - x);
     }
 }

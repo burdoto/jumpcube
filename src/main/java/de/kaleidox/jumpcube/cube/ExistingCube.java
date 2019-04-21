@@ -14,7 +14,6 @@ import de.kaleidox.jumpcube.game.GameManager;
 import de.kaleidox.jumpcube.interfaces.Generatable;
 import de.kaleidox.jumpcube.interfaces.Initializable;
 import de.kaleidox.jumpcube.interfaces.Startable;
-import de.kaleidox.jumpcube.util.MathUtil;
 import de.kaleidox.jumpcube.util.WorldUtil;
 
 import org.bukkit.Bukkit;
@@ -33,6 +32,8 @@ import static de.kaleidox.jumpcube.chat.MessageLevel.INFO;
 import static de.kaleidox.jumpcube.cube.BlockBar.MaterialGroup.CUBE;
 import static de.kaleidox.jumpcube.cube.BlockBar.MaterialGroup.GALLERY;
 import static de.kaleidox.jumpcube.cube.BlockBar.MaterialGroup.WALLS;
+import static de.kaleidox.jumpcube.util.MathUtil.dist;
+import static de.kaleidox.jumpcube.util.MathUtil.mid;
 import static de.kaleidox.jumpcube.util.WorldUtil.mid;
 import static de.kaleidox.jumpcube.util.WorldUtil.xyz;
 import static org.bukkit.Material.AIR;
@@ -51,7 +52,7 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
     private final int galleryHeight = 19;
     private final double density = 0.183; // todo Add changeable density
     private final int height = 110; // todo Add changeable height
-    private final double spacing = 0.25;
+    private final double spacing = 0.22;
     private int[][] tpPos;
     private int tpCycle = -1;
     private long startNanos = -1;
@@ -129,14 +130,14 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
                     world.getBlockAt(x, y, z).setType(AIR);
 
         for (int off : new int[]{0, 1, 2}) {
-            final int minXloop = min(pos[0][0], pos[1][0]) + off;
-            final int maxXloop = max(pos[0][0], pos[1][0]) - off;
-            final int minZloop = min(pos[0][2], pos[1][2]) + off;
-            final int maxZloop = max(pos[0][2], pos[1][2]) - off;
+            final int minXloop = minX + off;
+            final int maxXloop = maxX - off;
+            final int minZloop = minZ + off;
+            final int maxZloop = maxZ - off;
 
-            for (x = minX; x <= maxX; x++)
-                for (z = minZ; z <= maxZ; z++) {
-                    if (x == minX || x == maxX || z == minZ || z == maxZ) {
+            for (x = minXloop; x <= maxXloop; x++)
+                for (z = minZloop; z <= maxZloop; z++) {
+                    if (x == minXloop || x == maxXloop || z == minZloop || z == maxZloop) {
                         if (off == 0)
                             for (y = maxY; y > 0; y--)
                                 world.getBlockAt(x, y, z).setType(bar.getRandomMaterial(WALLS));
@@ -144,8 +145,6 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
                             world.getBlockAt(x, galleryHeight, z).setType(bar.getRandomMaterial(GALLERY));
                             if (off == 1)
                                 world.getBlockAt(x, galleryHeight + 3, z).setType(GLASS);
-                            if (off == 2)
-                                world.getBlockAt(x, galleryHeight + 1, z).setType(GLASS_PANE);
                         }
                     }
 
@@ -171,7 +170,7 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
 
         int x, y, z;
 
-        IntStream.range(2, MathUtil.mid(spaceX, spaceZ))
+        IntStream.range(2, mid(spaceX, spaceZ))
                 .forEach(off -> {
                     final int minXoff = minX + off;
                     final int maxXoff = maxX - off;
@@ -202,7 +201,41 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
     }
 
     public synchronized void bridges() {
+        final int spaceX = (int) (Math.abs(pos[1][0] - pos[0][0]) * spacing) * 100 / 130;
+        final int spaceZ = (int) (Math.abs(pos[1][2] - pos[0][2]) * spacing) * 100 / 130;
 
+        final int midX = mid(minX, maxX);
+        final int midZ = mid(minZ, maxZ);
+
+        final int xDistA = dist(midX, minX);
+        final int xDistB = dist(midX, maxX);
+        final int zDistA = dist(midZ, minZ);
+        final int zDistB = dist(midZ, maxZ);
+
+        int otherX = (midX - Integer.compare(xDistA, xDistB));
+        (otherX > midX ? IntStream.range(midX, otherX)
+                : (otherX == midX ? IntStream.range(otherX, midX + 1)
+                : IntStream.range(otherX, midX)))
+                .forEach(xBridge -> IntStream.range(2, spaceZ)
+                        .flatMap(zOff -> IntStream.of(minZ, maxZ)
+                                .map(z -> z == minZ ? z + zOff : z - zOff))
+                        .forEach(zBridge -> world.getBlockAt(xBridge, galleryHeight, zBridge)
+                                .setType(bar.getRandomMaterial(GALLERY))));
+
+        int otherZ = (midZ - Integer.compare(zDistA, zDistB));
+        (otherZ > midZ ? IntStream.range(midZ, otherZ)
+                : (otherZ == midZ ? IntStream.range(otherZ, midZ + 1)
+                : IntStream.range(otherZ, midZ)))
+                .forEach(zBridge -> IntStream.range(2, spaceX)
+                        .flatMap(xOff -> IntStream.of(minX, maxX)
+                                .map(x -> x == minX ? x + xOff : x - xOff))
+                        .forEach(xBridge -> world.getBlockAt(xBridge, galleryHeight, zBridge)
+                                .setType(bar.getRandomMaterial(GALLERY))));
+
+        world.getBlockAt(midX, galleryHeight + 1, minZ + 2).setType(AIR);
+        world.getBlockAt(midX, galleryHeight + 1, maxZ - 2).setType(AIR);
+        world.getBlockAt(minX + 2, galleryHeight + 1, midZ).setType(AIR);
+        world.getBlockAt(maxZ - 2, galleryHeight + 1, midZ).setType(AIR);
     }
 
     public synchronized void prepare() {
