@@ -100,24 +100,32 @@ public class GameManager implements Startable, Initializable {
             scheduler = null;
             activeGame = false;
 
-            if (player != null) broadcast(HINT, "%s has reached the goal!", player.getDisplayName());
-            else broadcast(HINT, "All players left the cube. The game has ended.");
+            if (player != null) {
+                broadcast(HINT, "%s has reached the goal!", player.getDisplayName());
+                joined.forEach(this::tpOut);
+                joined.clear();
+                leaving.clear();
+            } else broadcast(HINT, "All players left the cube. The game has ended.");
         }
     }
 
     public void leave(CommandSender sender) {
         UUID uuid = BukkitUtil.getUuid(sender);
-        leaving.add(uuid);
         Player player = BukkitUtil.getPlayer(sender);
 
-        PrevLoc pl = prevLocations.get(player.getUniqueId());
-
-        player.teleport(location(pl.world, pl.location));
+        tpOut(player);
 
         leaving.remove(uuid);
         joined.remove(player);
 
         if (joined.size() == 0) conclude(null);
+    }
+
+    private void tpOut(Player player) {
+        leaving.add(player.getUniqueId());
+        PrevLoc pl = prevLocations.get(player.getUniqueId());
+
+        player.teleport(location(pl.world, pl.location));
     }
 
     private void startTimer() {

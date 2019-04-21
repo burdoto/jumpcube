@@ -19,6 +19,7 @@ import de.kaleidox.jumpcube.util.WorldUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -115,7 +116,7 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
     }
 
     public void teleportIn(Player player) {
-        if (tpCycle++ > 3) tpCycle = 0;
+        if (++tpCycle >= tpPos.length) tpCycle = 0;
         Location location = WorldUtil.location(world, tpPos[tpCycle]);
         player.teleport(location.add(0, 1.2, 0));
     }
@@ -144,8 +145,11 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
                 for (z = minZloop; z <= maxZloop; z++) {
                     if (x == minXloop || x == maxXloop || z == minZloop || z == maxZloop) {
                         if (off == 0)
-                            for (y = maxY; y > 0; y--)
-                                world.getBlockAt(x, y, z).setType(bar.getRandomMaterial(WALLS));
+                            for (y = maxY; y > 0; y--) {
+                                Block block = world.getBlockAt(x, y, z);
+                                if (block.getType() != AIR)
+                                    block.setType(bar.getRandomMaterial(WALLS));
+                            }
                         else {
                             world.getBlockAt(x, galleryHeight, z).setType(bar.getRandomMaterial(GALLERY));
                             if (off == 1)
