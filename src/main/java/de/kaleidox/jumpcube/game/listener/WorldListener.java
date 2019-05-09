@@ -23,7 +23,6 @@ public class WorldListener extends ListenerBase implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
-        if (!event.getBlock().getWorld().equals(cube.getWorld())) return;
         if (!isInside(event)) return;
 
         if (event.getBlock().getType() != cube.getBlockBar().getPlaceable()) {
@@ -34,9 +33,8 @@ public class WorldListener extends ListenerBase implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
-        if (!event.getBlock().getWorld().equals(cube.getWorld())) return;
         if (!isInside(event)) return;
-        System.out.println("event = " + event);
+
         if (event.getBlockPlaced().getType() != cube.getBlockBar().getPlaceable()) {
             event.setCancelled(true);
             message(event.getPlayer(), WARN, "You can only place %s!",
@@ -45,6 +43,7 @@ public class WorldListener extends ListenerBase implements Listener {
     }
 
     private boolean isInside(BlockEvent blockEvent) {
-        return inside(expandVert(cube.getPositions()), xyz(blockEvent.getBlock().getLocation()));
+        return !blockEvent.getBlock().getWorld().equals(cube.getWorld())
+                && inside(expandVert(cube.getPositions()), xyz(blockEvent.getBlock().getLocation()));
     }
 }
