@@ -234,11 +234,8 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
                 .forEach(xBridge -> IntStream.range(2, spaceZ)
                         .flatMap(zOff -> IntStream.of(minZ, maxZ)
                                 .map(z -> z == minZ ? z + zOff : z - zOff))
-                        .forEach(zBridge -> {
-                            System.out.println("1 -- xBridge = " + xBridge + " && zBridge = " + zBridge);
-                            world.getBlockAt(xBridge, galleryHeight, zBridge)
-                                    .setType(bar.getRandomMaterial(GALLERY));
-                        }));
+                        .forEach(zBridge -> world.getBlockAt(xBridge, galleryHeight, zBridge)
+                                .setType(bar.getRandomMaterial(GALLERY))));
 
         int otherZ = (midZ - Integer.compare(zDistA, zDistB));
         (otherZ > midZ ? IntStream.range(midZ, otherZ)
@@ -247,11 +244,8 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
                 .forEach(zBridge -> IntStream.range(2, spaceX)
                         .flatMap(xOff -> IntStream.of(minX, maxX)
                                 .map(x -> x == minX ? x + xOff : x - xOff))
-                        .forEach(xBridge -> {
-                            System.out.println("2 -- xBridge = " + xBridge + " && zBridge = " + zBridge);
-                            world.getBlockAt(xBridge, galleryHeight, zBridge)
-                                    .setType(bar.getRandomMaterial(GALLERY));
-                        }));
+                        .forEach(xBridge -> world.getBlockAt(xBridge, galleryHeight, zBridge)
+                                .setType(bar.getRandomMaterial(GALLERY))));
 
         world.getBlockAt(midX, galleryHeight + 1, minZ + 2).setType(AIR);
         world.getBlockAt(midX, galleryHeight + 1, maxZ - 2).setType(AIR);
