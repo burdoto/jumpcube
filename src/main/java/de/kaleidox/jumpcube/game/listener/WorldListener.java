@@ -6,7 +6,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 
 import static de.kaleidox.jumpcube.chat.Chat.message;
@@ -23,7 +22,7 @@ public class WorldListener extends ListenerBase implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
-        if (!isInside(event)) return;
+        if (!isInside(xyz(event.getBlock().getLocation()))) return;
 
         if (event.getBlock().getType() != cube.getBlockBar().getPlaceable()) {
             event.setCancelled(true);
@@ -33,7 +32,7 @@ public class WorldListener extends ListenerBase implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
-        if (!isInside(event)) return;
+        if (!isInside(xyz(event.getBlockPlaced().getLocation()))) return;
         System.out.println("event = " + event);
         if (event.getBlockPlaced().getType() != cube.getBlockBar().getPlaceable()) {
             event.setCancelled(true);
@@ -42,7 +41,7 @@ public class WorldListener extends ListenerBase implements Listener {
         }
     }
 
-    private boolean isInside(BlockEvent blockEvent) {
-        return inside(expandVert(cube.getPositions()), xyz(blockEvent.getBlock().getLocation()));
+    private boolean isInside(int[] xyz) {
+        return inside(expandVert(cube.getPositions()), xyz);
     }
 }
