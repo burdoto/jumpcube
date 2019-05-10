@@ -8,10 +8,12 @@ import de.kaleidox.jumpcube.util.WorldUtil;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.jetbrains.annotations.NotNull;
 
@@ -56,6 +58,16 @@ public class PlayerListener extends ListenerBase implements Listener {
                 || manager.leaving.contains(BukkitUtil.getUuid(event.getPlayer()))) return;
         event.setCancelled(true);
         message(event.getPlayer(), WARN, "Use /jumpcube leave to leave the cube!");
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        Player player = event.getPlayer();
+        int[] xyz = xyz(player.getLocation());
+        if (isInside(player.getWorld(), xyz)
+                && manager.activeGame
+                && manager.joined.contains(player))
+            manager.leave(player);
     }
 
     private boolean isInside(@NotNull World world, int[] xyz) {
