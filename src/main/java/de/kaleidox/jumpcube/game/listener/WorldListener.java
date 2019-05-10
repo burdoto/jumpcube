@@ -7,6 +7,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 
 import static de.kaleidox.jumpcube.chat.Chat.message;
 import static de.kaleidox.jumpcube.chat.MessageLevel.HINT;
@@ -38,6 +39,20 @@ public class WorldListener extends ListenerBase implements Listener {
             event.setCancelled(true);
             message(event.getPlayer(), WARN, "You can only place %s!",
                     cube.getBlockBar().getPlaceable().name().toLowerCase());
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        if (event.getClickedBlock() == null || event.getItem() == null) return;
+        if (!isInside(xyz(event.getClickedBlock().getLocation()))) return;
+
+        switch (event.getItem().getType()) {
+            case WATER:
+            case WATER_BUCKET:
+            case LAVA:
+            case LAVA_BUCKET:
+                event.setCancelled(true);
         }
     }
 
