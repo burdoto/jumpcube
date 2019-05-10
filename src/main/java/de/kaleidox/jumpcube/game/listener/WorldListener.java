@@ -23,7 +23,7 @@ public class WorldListener extends ListenerBase implements Listener {
         super(cube);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBreak(BlockBreakEvent event) {
         if (!isInside(event.getBlock().getWorld(), xyz(event.getBlock().getLocation()))) return;
         if (event.isCancelled()) event.setCancelled(false);
@@ -34,7 +34,7 @@ public class WorldListener extends ListenerBase implements Listener {
         } else message(event.getPlayer(), HINT, "Here's your joker!");
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockPlace(BlockPlaceEvent event) {
         if (!isInside(event.getBlock().getWorld(), xyz(event.getBlock().getLocation()))) return;
         if (event.isCancelled()) event.setCancelled(false);
@@ -46,7 +46,7 @@ public class WorldListener extends ListenerBase implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.getClickedBlock() == null || event.getItem() == null) return;
         if (!isInside(event.getPlayer().getWorld(), xyz(event.getPlayer().getLocation()))) return;
