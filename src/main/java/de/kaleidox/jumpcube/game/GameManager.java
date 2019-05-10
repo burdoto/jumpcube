@@ -69,7 +69,7 @@ public class GameManager implements Startable, Initializable {
             joined.add(player);
             if (scheduler == null) startTimer();
             Chat.broadcast(DEBUG_NOTIFY, INFO, "Generating cube...");
-            cube.generate();
+            if (joined.size() == 1) cube.generate();
         } else {
             // warn user
             message(sender, WARN, "Warning: You might die in the game! " +
