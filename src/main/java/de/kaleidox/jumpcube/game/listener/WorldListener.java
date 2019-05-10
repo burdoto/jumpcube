@@ -2,12 +2,14 @@ package de.kaleidox.jumpcube.game.listener;
 
 import de.kaleidox.jumpcube.cube.Cube;
 
+import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.jetbrains.annotations.NotNull;
 
 import static de.kaleidox.jumpcube.chat.Chat.message;
 import static de.kaleidox.jumpcube.chat.MessageLevel.HINT;
@@ -23,7 +25,7 @@ public class WorldListener extends ListenerBase implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
-        if (!isInside(xyz(event.getBlock().getLocation()))) return;
+        if (!isInside(event.getBlock().getWorld(), xyz(event.getBlock().getLocation()))) return;
 
         if (event.getBlock().getType() != cube.getBlockBar().getPlaceable()) {
             event.setCancelled(true);
@@ -33,7 +35,7 @@ public class WorldListener extends ListenerBase implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
-        if (!isInside(xyz(event.getBlockPlaced().getLocation()))) return;
+        if (!isInside(event.getBlock().getWorld(), xyz(event.getBlockPlaced().getLocation()))) return;
 
         if (event.getBlockPlaced().getType() != cube.getBlockBar().getPlaceable()) {
             event.setCancelled(true);
@@ -45,7 +47,7 @@ public class WorldListener extends ListenerBase implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.getClickedBlock() == null || event.getItem() == null) return;
-        if (!isInside(xyz(event.getClickedBlock().getLocation()))) return;
+        if (!isInside(event.getClickedBlock().getWorld(), xyz(event.getClickedBlock().getLocation()))) return;
 
         switch (event.getItem().getType()) {
             case WATER:
@@ -56,8 +58,7 @@ public class WorldListener extends ListenerBase implements Listener {
         }
     }
 
-    private boolean isInside(int[] xyz) {
-        return !blockEvent.getBlock().getWorld().equals(cube.getWorld())
-                && inside(expandVert(cube.getPositions()), xyz);
+    private boolean isInside(@NotNull World world, int[] xyz) {
+        return world.equals(cube.getWorld()) && inside(expandVert(cube.getPositions()), xyz);
     }
 }
