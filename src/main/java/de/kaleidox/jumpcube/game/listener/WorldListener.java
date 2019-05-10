@@ -6,8 +6,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 
 import static de.kaleidox.jumpcube.chat.Chat.message;
 import static de.kaleidox.jumpcube.chat.MessageLevel.HINT;
@@ -23,7 +23,7 @@ public class WorldListener extends ListenerBase implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
-        if (!isInside(event)) return;
+        if (!isInside(xyz(event.getBlock().getLocation()))) return;
 
         if (event.getBlock().getType() != cube.getBlockBar().getPlaceable()) {
             event.setCancelled(true);
@@ -33,7 +33,7 @@ public class WorldListener extends ListenerBase implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
-        if (!isInside(event)) return;
+        if (!isInside(xyz(event.getBlockPlaced().getLocation()))) return;
 
         if (event.getBlockPlaced().getType() != cube.getBlockBar().getPlaceable()) {
             event.setCancelled(true);
@@ -42,8 +42,22 @@ public class WorldListener extends ListenerBase implements Listener {
         }
     }
 
-    private boolean isInside(BlockEvent blockEvent) {
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        if (event.getClickedBlock() == null || event.getItem() == null) return;
+        if (!isInside(xyz(event.getClickedBlock().getLocation()))) return;
+
+        switch (event.getItem().getType()) {
+            case WATER:
+            case WATER_BUCKET:
+            case LAVA:
+            case LAVA_BUCKET:
+                event.setCancelled(true);
+        }
+    }
+
+    private boolean isInside(int[] xyz) {
         return !blockEvent.getBlock().getWorld().equals(cube.getWorld())
-                && inside(expandVert(cube.getPositions()), xyz(blockEvent.getBlock().getLocation()));
+                && inside(expandVert(cube.getPositions()), xyz);
     }
 }
