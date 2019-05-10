@@ -7,12 +7,13 @@ import de.kaleidox.jumpcube.util.BukkitUtil;
 import de.kaleidox.jumpcube.util.WorldUtil;
 
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.jetbrains.annotations.NotNull;
 
 import static de.kaleidox.jumpcube.chat.Chat.message;
 import static de.kaleidox.jumpcube.chat.MessageLevel.ERROR;
@@ -34,7 +35,7 @@ public class PlayerListener extends ListenerBase implements Listener {
         Location moveTo = event.getTo();
         if (moveTo == null) return;
         int[][] expand = expandVert(cube.getPositions());
-        if (!inside(expand, xyz(moveTo))) return;
+        if (!isInside(event.getPlayer().getWorld(), xyz(moveTo))) return;
         if (!manager.joined.contains(event.getPlayer())) return;
 
         if (moveTo.getBlockY() >= cube.getHeight())
@@ -50,10 +51,14 @@ public class PlayerListener extends ListenerBase implements Listener {
     public void onPlayerTeleport(PlayerTeleportEvent event) {
         if (event.getPlayer().hasPermission(JumpCube.Permission.TELEPORT_OUT)) return;
         int[] before = xyz(event.getFrom());
-        if (!inside(expandVert(cube.getPositions()), before)
+        if (!isInside(event.getPlayer().getWorld(), before)
                 || !manager.activeGame
                 || manager.leaving.contains(BukkitUtil.getUuid(event.getPlayer()))) return;
         event.setCancelled(true);
         message(event.getPlayer(), WARN, "Use /jumpcube leave to leave the cube!");
+    }
+
+    private boolean isInside(@NotNull World world, int[] xyz) {
+        return world.equals(cube.getWorld()) && inside(expandVert(cube.getPositions()), xyz);
     }
 }
