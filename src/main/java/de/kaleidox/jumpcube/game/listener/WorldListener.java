@@ -26,9 +26,8 @@ public class WorldListener extends ListenerBase implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
         boolean inside = isInside(event.getBlock().getWorld(), xyz(event.getBlock().getLocation()));
-        if (inside)
-            if (event.isCancelled()) event.setCancelled(false);
-            else return;
+        if (!inside) return;
+        if (event.isCancelled()) event.setCancelled(false);
 
         if (event.getBlock().getType() != cube.getBlockBar().getPlaceable()) {
             event.setCancelled(true);
@@ -39,9 +38,8 @@ public class WorldListener extends ListenerBase implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
         boolean inside = isInside(event.getBlock().getWorld(), xyz(event.getBlock().getLocation()));
-        if (inside)
-            if (event.isCancelled()) event.setCancelled(false);
-            else return;
+        if (!inside) return;
+        if (event.isCancelled()) event.setCancelled(false);
 
         if (event.getBlockPlaced().getType() != cube.getBlockBar().getPlaceable()) {
             event.setCancelled(true);
@@ -55,9 +53,8 @@ public class WorldListener extends ListenerBase implements Listener {
         if (event.getClickedBlock() == null || event.getItem() == null) return;
 
         boolean inside = isInside(event.getClickedBlock().getWorld(), xyz(event.getClickedBlock().getLocation()));
-        if (inside)
-            if (event.isCancelled()) event.setCancelled(false);
-            else return;
+        if (!inside) return;
+        if (event.isCancelled()) event.setCancelled(false);
 
         switch (event.getItem().getType()) {
             case WATER:
