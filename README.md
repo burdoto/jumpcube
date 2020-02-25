@@ -7,9 +7,9 @@ This minigame is a JumpNRun game, where you spawn into a large, randomly generat
 
 1. Create the cube by using `/jumpcube create <NAME>` where you replace "<NAME>" with the name of the cube.
   
-  2. Paste the BlockBar somewhere _OUTSIDE from the cube area. This is done by doing `/jumpcube bar`. The bar will extend 4 blocks into the positive X direction from the player location.
+  2. Paste the BlockBar somewhere _OUTSIDE_ from the cube area. This is done by doing `/jumpcube bar`. The bar will extend 4 blocks into the positive X direction from the player location.
   3. Define the corner positions for the cube. The command for this is: `/jumpcube pos <1/2>`. The recommended size for your area is 48x48.
-  4. Complete cube setup with `/jumpcube confirm`. _Note: If the cube cannot be used after this command, a server restart will make the cube usable. This is a known bug.
+  4. Complete cube setup with `/jumpcube confirm`. _Note: If the cube cannot be used after this command, a server restart will make the cube usable. This is a known bug._
 
 ## Permissions
 
