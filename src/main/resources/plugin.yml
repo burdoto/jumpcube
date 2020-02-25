@@ -4,6 +4,8 @@ version: 0.1.3
 author: Kaleidox
 description: Continuation of the DeathCube plugin
 api-version: 1.13
+softdepend:
+  - Spiroid
 commands:
   jumpcube:
     description: JumpCube command
