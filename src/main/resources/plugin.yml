@@ -1,9 +1,9 @@
 main: de.kaleidox.jumpcube.JumpCube
-name: JumpCube
-version: 0.1.3
+name: ${rootProject.name}
+version: ${version}
 author: Kaleidox
 description: Continuation of the DeathCube plugin
-api-version: 1.13
+api-version: ${apiLevel}
 softdepend:
   - Spiroid
 commands:
