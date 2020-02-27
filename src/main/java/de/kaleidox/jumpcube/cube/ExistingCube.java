@@ -227,30 +227,25 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
 
         System.out.println("spaceZ = " + spaceZ);
 
-        int otherX = (midX - Integer.compare(xDistA, xDistB));
-        (otherX > midX ? IntStream.range(midX, otherX)
-                : (otherX == midX ? IntStream.range(otherX, midX + 1)
-                : IntStream.range(otherX, midX)))
-                .forEach(xBridge -> IntStream.range(2, spaceZ)
-                        .flatMap(zOff -> IntStream.of(minZ, maxZ)
-                                .map(z -> z == minZ ? z + zOff : z - zOff))
-                        .forEach(zBridge -> world.getBlockAt(xBridge, galleryHeight, zBridge)
-                                .setType(bar.getRandomMaterial(GALLERY))));
-
-        int otherZ = (midZ - Integer.compare(zDistA, zDistB));
-        (otherZ > midZ ? IntStream.range(midZ, otherZ)
-                : (otherZ == midZ ? IntStream.range(otherZ, midZ + 1)
-                : IntStream.range(otherZ, midZ)))
-                .forEach(zBridge -> IntStream.range(2, spaceX)
-                        .flatMap(xOff -> IntStream.of(minX, maxX)
-                                .map(x -> x == minX ? x + xOff : x - xOff))
-                        .forEach(xBridge -> world.getBlockAt(xBridge, galleryHeight, zBridge)
-                                .setType(bar.getRandomMaterial(GALLERY))));
+        generateGallery(spaceZ, midX, xDistA, xDistB);
+        generateGallery(spaceX, midZ, zDistA, zDistB);
 
         world.getBlockAt(midX, galleryHeight + 1, minZ + 2).setType(AIR);
         world.getBlockAt(midX, galleryHeight + 1, maxZ - 2).setType(AIR);
         world.getBlockAt(minX + 2, galleryHeight + 1, midZ).setType(AIR);
         world.getBlockAt(maxZ - 2, galleryHeight + 1, midZ).setType(AIR);
+    }
+
+    private void generateGallery(int space, int mid, int distA, int distB) {
+        int otherX = (mid - Integer.compare(distA, distB));
+        (otherX > mid ? IntStream.range(mid, otherX)
+                : (otherX == mid ? IntStream.range(otherX, mid + 1)
+                : IntStream.range(otherX, mid)))
+                .forEach(xBridge -> IntStream.range(2, space)
+                        .flatMap(zOff -> IntStream.of(minZ, maxZ)
+                                .map(z -> z == minZ ? z + zOff : z - zOff))
+                        .forEach(zBridge -> world.getBlockAt(xBridge, galleryHeight, zBridge)
+                                .setType(bar.getRandomMaterial(GALLERY))));
     }
 
     @Override
