@@ -4,7 +4,7 @@ group 'de.kaleidox'
 version '0.1.4-SNAPSHOT'
 
 ext {
-    apiLevel = "1.15.2"
+    apiLevel = "1.15"
 }
 
 sourceCompatibility = 1.8
