@@ -253,26 +253,30 @@ public final class JumpCube extends JavaPlugin {
             case "pos1":
             case "pos2":
                 if (!checkPerm(sender, Permission.ADMIN)) return;
-                assert sel != null;
+                if (sel == null)
+                    throw new NoSuchCubeException(BukkitUtil.getPlayer(sender));
                 CubeCreationTool.Commands.pos(sender, sel, subCommand, args);
                 return;
             case "bar":
                 if (!checkPerm(sender, Permission.ADMIN)) return;
                 if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
-                assert sel != null;
+                if (sel == null)
+                    throw new NoSuchCubeException(BukkitUtil.getPlayer(sender));
                 CubeCreationTool.Commands.bar(sender, sel, args);
                 return;
             case "confirm":
                 if (!checkPerm(sender, Permission.ADMIN)) return;
                 if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
-                assert sel != null;
+                if (sel == null)
+                    throw new NoSuchCubeException(BukkitUtil.getPlayer(sender));
                 CubeCreationTool.Commands.confirm(sender, sel);
                 return;
             // Game commands
             case "regenerate":
             case "regen":
                 if (!checkPerm(sender, Permission.REGENERATE)) return;
-                assert sel != null;
+                if (sel == null)
+                    throw new NoSuchCubeException(BukkitUtil.getPlayer(sender));
                 if (!validateSelection(sender, sel)) return;
                 if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
                 ExistingCube.Commands.regenerate(sender, sel, false);
@@ -280,27 +284,31 @@ public final class JumpCube extends JavaPlugin {
             case "regenerate-complete":
             case "regen-complete":
                 if (!checkPerm(sender, Permission.REGENERATE)) return;
-                assert sel != null;
+                if (sel == null)
+                    throw new NoSuchCubeException(BukkitUtil.getPlayer(sender));
                 if (!validateSelection(sender, sel)) return;
                 if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
                 ExistingCube.Commands.regenerate(sender, sel, true);
                 return;
             case "join":
                 if (!checkPerm(sender, Permission.USER)) return;
-                assert sel != null;
+                if (sel == null)
+                    throw new NoSuchCubeException(BukkitUtil.getPlayer(sender));
                 if (!validateSelection(sender, sel)) return;
                 if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
                 ((ExistingCube) sel).manager.join(sender);
                 return;
             case "leave":
-                assert sel != null;
+                if (sel == null)
+                    throw new NoSuchCubeException(BukkitUtil.getPlayer(sender));
                 if (!validateSelection(sender, sel)) return;
                 if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
                 ((ExistingCube) sel).manager.leave(sender);
                 return;
             case "start":
                 if (!checkPerm(sender, Permission.START_EARLY)) return;
-                assert sel != null;
+                if (sel == null)
+                    throw new NoSuchCubeException(BukkitUtil.getPlayer(sender));
                 if (!validateSelection(sender, sel)) return;
                 if (args.length != 0) throw new InvalidArgumentCountException(0, args.length);
                 ((ExistingCube) sel).manager.start();

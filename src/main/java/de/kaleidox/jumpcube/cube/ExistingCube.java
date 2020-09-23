@@ -275,7 +275,10 @@ public class ExistingCube implements Cube, Generatable, Startable, Initializable
         return Optional.ofNullable(JumpCube.instance.selections.get(player.getUniqueId()))
                 .orElseGet(() -> {
                     Cube sel = null;
-                    if (instances.size() == 1) sel = instances.entrySet().iterator().next().getValue();
+                    if (instances.size() == 0)
+                        return null;
+                    if (instances.size() == 1)
+                        sel = instances.entrySet().iterator().next().getValue();
                     if (sel == null)
                         sel = instances.values()
                                 .stream()
