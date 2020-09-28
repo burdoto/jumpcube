@@ -1,0 +1,20 @@
+ext {
+    artifactName = 'Spiroid'
+    userbase = 'comroid-git'
+
+    projectDescription = 'Implementation Logic of the Spiroid API plugin'
+    exportedProjects = parent.subprojects.collect { it.name }
+
+    snapshot = project.version.endsWith('SNAPSHOT')
+    mcVersion = '1.16.1'
+    mcVersionMj = mcVersion.substring(0, mcVersion.lastIndexOf('.'))
+    spigotRC = 'R0.1'
+    pluginVersion = version.replace("-SNAPSHOT", "-alpha")
+
+    pluginJarName = System.getenv().containsKey("JAR_NAME")
+            ? System.getenv().get("JAR_NAME")
+            : "$name-mc$mcVersion@${project.version}.jar"
+    testServerDir = System.getenv().containsKey('TEST_SERVER_DIR')
+            ? System.getenv('TEST_SERVER_DIR')
+            : file(".").absolutePath
+}

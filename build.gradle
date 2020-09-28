@@ -1,43 +1,44 @@
+plugins {
+    id "com.github.johnrengelman.shadow" version "5.2.0"
+}
+
+tasks.findByName('wrapper')?.configure {
+    gradleVersion = '6.2'
+    distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
+}
+
 apply plugin: 'java'
 
-group 'de.kaleidox'
-version '0.1.4-SNAPSHOT'
+group 'org.comroid'
+version '0.4.0-SNAPSHOT'
 
 ext {
-    apiLevel = "1.15"
+    pluginDescription = 'comroid Core Plugin'
+    mcVersion = '1.16.3'
+    spigotRC = 'R0.1'
+    pluginVersion = version.replace("-SNAPSHOT", "-alpha")
 }
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-repositories.jcenter()
-
-compileJava {
-    options.encoding = "UTF-8"
-}
-
-processResources {
-    from(sourceSets.main.resources) {
-        expand project.properties
+repositories {
+    mavenLocal()
+    maven {
+        url = 'https://maven.jetbrains.space/comroid/repo'
+        credentials.username = 'Anonymous.User'
+        credentials.password = 'anonymous'
     }
-}
-
-jar.baseName "$rootProject.name-mc$apiLevel"
-
-task testPlugin(type: Copy, dependsOn: ['deleteTestPlugin', 'jar']) {
-    from tasks.findByName('jar').outputs.files.singleFile
-    into file("test/plugins/")
-    rename { String filename ->
-        return filename.contains(rootProject.name) ? "${rootProject.name}.jar" : filename
-    }
-}
-
-task deleteTestPlugin(type: Delete) {
-    delete "test/plugins/${rootProject.name}.jar"
+    maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    jcenter()
+    maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
 
 dependencies {
-    compileOnly fileTree("libs")
-
+    compileOnly "org.spigotmc:spigot-api:$mcVersion-$spigotRC-SNAPSHOT"
     compileOnly 'org.jetbrains:annotations:19.0.0'
 }
+
+apply plugin: 'com.github.johnrengelman.shadow'
+apply from: 'vars.gradle'
+apply from: 'jar.gradle'
