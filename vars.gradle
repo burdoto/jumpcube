@@ -3,7 +3,6 @@ ext {
     userbase = 'comroid-git'
 
     projectDescription = 'Implementation Logic of the Spiroid API plugin'
-    exportedProjects = parent.subprojects.collect { it.name }
 
     snapshot = project.version.endsWith('SNAPSHOT')
     mcVersion = '1.16.1'
