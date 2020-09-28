@@ -3,7 +3,7 @@ name: ${project.name}
 version: ${version}
 author: Kaleidox
 description: Continuation of the DeathCube plugin
-api-version: 1.15
+api-version: ${mcVersionMj}
 softdepend:
   - Spiroid
 commands:
