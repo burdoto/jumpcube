@@ -4,11 +4,8 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.jetbrains.annotations.Contract;
 
-import static java.lang.Math.max;
-import static java.lang.Math.min;
-import static java.lang.Math.pow;
-import static java.lang.Math.sqrt;
 import static de.kaleidox.jumpcube.util.MathUtil.raising;
+import static java.lang.Math.*;
 
 public final class WorldUtil {
     private WorldUtil() {

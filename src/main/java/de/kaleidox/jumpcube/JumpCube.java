@@ -1,15 +1,5 @@
 package de.kaleidox.jumpcube;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
-
 import de.kaleidox.jumpcube.chat.MessageLevel;
 import de.kaleidox.jumpcube.cube.BlockBar;
 import de.kaleidox.jumpcube.cube.Cube;
@@ -19,7 +9,6 @@ import de.kaleidox.jumpcube.exception.InnerCommandException;
 import de.kaleidox.jumpcube.exception.InvalidArgumentCountException;
 import de.kaleidox.jumpcube.exception.NoSuchCubeException;
 import de.kaleidox.jumpcube.util.BukkitUtil;
-
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -27,16 +16,33 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
+
 import static de.kaleidox.jumpcube.chat.Chat.message;
 import static de.kaleidox.jumpcube.chat.MessageLevel.ERROR;
 import static de.kaleidox.jumpcube.chat.MessageLevel.INFO;
 
 public final class JumpCube extends JavaPlugin {
     public static final Random rng = new Random();
-    @Nullable public static JumpCube instance;
+    @Nullable
+    public static JumpCube instance;
 
     public Map<UUID, Cube> selections = new ConcurrentHashMap<>();
     private Logger logger;
+
+    private static boolean validateSelection(CommandSender sender, Cube sel) {
+        if (sel == null) {
+            message(sender, ERROR, "No cube selected!");
+            return false;
+        }
+        if (!(sel instanceof ExistingCube)) {
+            message(sender, ERROR, "Cube %s is not finished!", sel.getCubeName());
+            return false;
+        }
+        return true;
+    }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender,
@@ -321,18 +327,6 @@ public final class JumpCube extends JavaPlugin {
 
     private void messagePerm(CommandSender sender, String permission) {
         message(BukkitUtil.getPlayer(sender), ERROR, "You are missing the permission: %s", permission);
-    }
-
-    private static boolean validateSelection(CommandSender sender, Cube sel) {
-        if (sel == null) {
-            message(sender, ERROR, "No cube selected!");
-            return false;
-        }
-        if (!(sel instanceof ExistingCube)) {
-            message(sender, ERROR, "Cube %s is not finished!", sel.getCubeName());
-            return false;
-        }
-        return true;
     }
 
     public static final class Permission {

@@ -5,7 +5,6 @@ import de.kaleidox.jumpcube.cube.Cube;
 import de.kaleidox.jumpcube.game.GameManager;
 import de.kaleidox.jumpcube.util.BukkitUtil;
 import de.kaleidox.jumpcube.util.WorldUtil;
-
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -20,9 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import static de.kaleidox.jumpcube.chat.Chat.message;
 import static de.kaleidox.jumpcube.chat.MessageLevel.ERROR;
 import static de.kaleidox.jumpcube.chat.MessageLevel.WARN;
-import static de.kaleidox.jumpcube.util.WorldUtil.expandVert;
-import static de.kaleidox.jumpcube.util.WorldUtil.inside;
-import static de.kaleidox.jumpcube.util.WorldUtil.xyz;
+import static de.kaleidox.jumpcube.util.WorldUtil.*;
 
 public class PlayerListener extends ListenerBase implements Listener {
     private final GameManager manager;

@@ -5,8 +5,6 @@ import org.bukkit.World;
 public interface Cube {
     String getCubeName();
 
-    void delete();
-
     int[][] getPositions();
 
     int getHeight();
@@ -14,4 +12,6 @@ public interface Cube {
     BlockBar getBlockBar();
 
     World getWorld();
+
+    void delete();
 }

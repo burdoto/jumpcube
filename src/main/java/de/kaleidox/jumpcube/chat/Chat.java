@@ -1,7 +1,6 @@
 package de.kaleidox.jumpcube.chat;
 
 import de.kaleidox.jumpcube.util.BukkitUtil;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;

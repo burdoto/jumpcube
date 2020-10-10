@@ -1,7 +1,6 @@
 package de.kaleidox.jumpcube.game.listener;
 
 import de.kaleidox.jumpcube.cube.Cube;
-
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -14,9 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import static de.kaleidox.jumpcube.chat.Chat.message;
 import static de.kaleidox.jumpcube.chat.MessageLevel.HINT;
 import static de.kaleidox.jumpcube.chat.MessageLevel.WARN;
-import static de.kaleidox.jumpcube.util.WorldUtil.expandVert;
-import static de.kaleidox.jumpcube.util.WorldUtil.inside;
-import static de.kaleidox.jumpcube.util.WorldUtil.xyz;
+import static de.kaleidox.jumpcube.util.WorldUtil.*;
 
 public class WorldListener extends ListenerBase implements Listener {
     public WorldListener(Cube cube) {

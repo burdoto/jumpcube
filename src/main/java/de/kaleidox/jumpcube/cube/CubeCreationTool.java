@@ -4,18 +4,17 @@ import de.kaleidox.jumpcube.JumpCube;
 import de.kaleidox.jumpcube.exception.InvalidArgumentCountException;
 import de.kaleidox.jumpcube.util.BukkitUtil;
 import de.kaleidox.jumpcube.util.WorldUtil;
-
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
-import static java.lang.Math.max;
 import static de.kaleidox.jumpcube.chat.Chat.message;
 import static de.kaleidox.jumpcube.chat.MessageLevel.ERROR;
 import static de.kaleidox.jumpcube.chat.MessageLevel.INFO;
 import static de.kaleidox.jumpcube.util.WorldUtil.dist;
+import static java.lang.Math.max;
 
 public class CubeCreationTool implements Cube {
     public final Player player;
@@ -24,11 +23,6 @@ public class CubeCreationTool implements Cube {
     private int[][] pos = new int[2][3];
     private BlockBar bar;
 
-    public CubeCreationTool(Player player) {
-        this.player = player;
-        this.world = player.getWorld();
-    }
-
     public boolean isReady() {
         return name != null
                 && pos[0] != null
@@ -36,26 +30,9 @@ public class CubeCreationTool implements Cube {
                 && bar != null;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setPos(int y, Location location) {
-        pos[y - 1] = WorldUtil.xyz(location);
-    }
-
     @Override
     public String getCubeName() {
         return name;
-    }
-
-    @SuppressWarnings("ConstantConditions")
-    @Override
-    public void delete() {
-        // release pointers
-        name = null;
-        pos = null;
-        bar = null;
     }
 
     @Override
@@ -76,6 +53,28 @@ public class CubeCreationTool implements Cube {
     @Override
     public World getWorld() {
         return world;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public CubeCreationTool(Player player) {
+        this.player = player;
+        this.world = player.getWorld();
+    }
+
+    public void setPos(int y, Location location) {
+        pos[y - 1] = WorldUtil.xyz(location);
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Override
+    public void delete() {
+        // release pointers
+        name = null;
+        pos = null;
+        bar = null;
     }
 
     public ExistingCube create() {

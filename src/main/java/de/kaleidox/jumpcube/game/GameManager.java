@@ -1,5 +1,21 @@
 package de.kaleidox.jumpcube.game;
 
+import de.kaleidox.jumpcube.JumpCube;
+import de.kaleidox.jumpcube.chat.Chat;
+import de.kaleidox.jumpcube.cube.ExistingCube;
+import de.kaleidox.jumpcube.exception.GameRunningException;
+import de.kaleidox.jumpcube.game.listener.PlayerListener;
+import de.kaleidox.jumpcube.game.listener.WorldListener;
+import de.kaleidox.jumpcube.interfaces.Initializable;
+import de.kaleidox.jumpcube.interfaces.Startable;
+import de.kaleidox.jumpcube.util.BukkitUtil;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.PluginManager;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -11,43 +27,25 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
-import de.kaleidox.jumpcube.JumpCube;
-import de.kaleidox.jumpcube.chat.Chat;
-import de.kaleidox.jumpcube.cube.ExistingCube;
-import de.kaleidox.jumpcube.exception.GameRunningException;
-import de.kaleidox.jumpcube.game.listener.PlayerListener;
-import de.kaleidox.jumpcube.game.listener.WorldListener;
-import de.kaleidox.jumpcube.interfaces.Initializable;
-import de.kaleidox.jumpcube.interfaces.Startable;
-import de.kaleidox.jumpcube.util.BukkitUtil;
-
-import org.bukkit.Bukkit;
-import org.bukkit.World;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.PluginManager;
-import org.jetbrains.annotations.Nullable;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static de.kaleidox.jumpcube.JumpCube.Permission.DEBUG_NOTIFY;
 import static de.kaleidox.jumpcube.chat.Chat.broadcast;
 import static de.kaleidox.jumpcube.chat.Chat.message;
-import static de.kaleidox.jumpcube.chat.MessageLevel.HINT;
-import static de.kaleidox.jumpcube.chat.MessageLevel.INFO;
-import static de.kaleidox.jumpcube.chat.MessageLevel.WARN;
+import static de.kaleidox.jumpcube.chat.MessageLevel.*;
 import static de.kaleidox.jumpcube.util.WorldUtil.location;
 import static de.kaleidox.jumpcube.util.WorldUtil.xyz;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class GameManager implements Startable, Initializable {
     public final List<UUID> leaving = new ArrayList<>();
+    public final List<Player> joined = new ArrayList<>();
     private final Map<UUID, PrevLoc> prevLocations = new ConcurrentHashMap<>();
     private final ExistingCube cube;
     private final List<UUID> attemptedJoin = new ArrayList<>();
-    public final List<Player> joined = new ArrayList<>();
     private final int baseTime = 30;
     public boolean activeGame = false;
     private int remaining = 30;
-    @Nullable private ScheduledExecutorService scheduler;
+    @Nullable
+    private ScheduledExecutorService scheduler;
     private AtomicReference<ScheduledFuture<?>> timeBroadcastFuture;
 
     public GameManager(ExistingCube cube) {

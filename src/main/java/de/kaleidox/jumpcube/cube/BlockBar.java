@@ -1,13 +1,9 @@
 package de.kaleidox.jumpcube.cube;
 
-import java.util.Arrays;
-import java.util.Objects;
-
 import de.kaleidox.jumpcube.exception.InvalidBlockBarException;
 import de.kaleidox.jumpcube.interfaces.Generatable;
 import de.kaleidox.jumpcube.util.BukkitUtil;
 import de.kaleidox.jumpcube.util.WorldUtil;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -17,6 +13,9 @@ import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 import static de.kaleidox.jumpcube.JumpCube.rng;
 
 public class BlockBar implements Generatable {
@@ -24,6 +23,10 @@ public class BlockBar implements Generatable {
     private final World world;
     private final @Range(from = 3, to = 3) int[] xyz;
     private final Material[] materials;
+
+    public Material getPlaceable() {
+        return materials[3];
+    }
 
     public BlockBar(Player player) {
         this(player, null);
@@ -46,6 +49,39 @@ public class BlockBar implements Generatable {
         this.materials = new Material[8];
 
         refresh();
+    }
+
+    public static void initConfig(FileConfiguration config) {
+        configMaterials[0] = BukkitUtil.getMaterial(config.getString("cube.defaults.bar.a"))
+                .orElse(Material.RED_WOOL);
+        configMaterials[1] = BukkitUtil.getMaterial(config.getString("cube.defaults.bar.b"))
+                .orElse(Material.YELLOW_WOOL);
+        configMaterials[2] = BukkitUtil.getMaterial(config.getString("cube.defaults.bar.c"))
+                .orElse(Material.BLUE_WOOL);
+        configMaterials[3] = BukkitUtil.getMaterial(config.getString("cube.defaults.bar.placeable"))
+                .orElse(Material.PUMPKIN);
+        configMaterials[4] = BukkitUtil.getMaterial(config.getString("cube.defaults.bar.aFix"))
+                .orElse(Material.RED_CONCRETE);
+        configMaterials[5] = BukkitUtil.getMaterial(config.getString("cube.defaults.bar.bFix"))
+                .orElse(Material.YELLOW_CONCRETE);
+        configMaterials[6] = BukkitUtil.getMaterial(config.getString("cube.defaults.bar.cFix"))
+                .orElse(Material.BLUE_CONCRETE);
+        configMaterials[7] = BukkitUtil.getMaterial(config.getString("cube.defaults.bar.dFix"))
+                .orElse(Material.LIGHT_GRAY_CONCRETE);
+    }
+
+    public static BlockBar create(FileConfiguration config, String basePath) {
+        World world = Bukkit.getWorld(Objects.requireNonNull(config.getString(basePath + "world"),
+                "No world defined for bar!"));
+        int[] xyz = new int[]{
+                config.getInt(basePath + "pos.x"),
+                config.getInt(basePath + "pos.y"),
+                config.getInt(basePath + "pos.z")
+        };
+
+        assert world != null : "Unknown world: " + config.getString(basePath + "world");
+
+        return new BlockBar(world, xyz);
     }
 
     @Override
@@ -98,43 +134,6 @@ public class BlockBar implements Generatable {
         config.set(basePath + "pos.x", xyz[0]);
         config.set(basePath + "pos.y", xyz[1]);
         config.set(basePath + "pos.z", xyz[2]);
-    }
-
-    public Material getPlaceable() {
-        return materials[3];
-    }
-
-    public static void initConfig(FileConfiguration config) {
-        configMaterials[0] = BukkitUtil.getMaterial(config.getString("cube.defaults.bar.a"))
-                .orElse(Material.RED_WOOL);
-        configMaterials[1] = BukkitUtil.getMaterial(config.getString("cube.defaults.bar.b"))
-                .orElse(Material.YELLOW_WOOL);
-        configMaterials[2] = BukkitUtil.getMaterial(config.getString("cube.defaults.bar.c"))
-                .orElse(Material.BLUE_WOOL);
-        configMaterials[3] = BukkitUtil.getMaterial(config.getString("cube.defaults.bar.placeable"))
-                .orElse(Material.PUMPKIN);
-        configMaterials[4] = BukkitUtil.getMaterial(config.getString("cube.defaults.bar.aFix"))
-                .orElse(Material.RED_CONCRETE);
-        configMaterials[5] = BukkitUtil.getMaterial(config.getString("cube.defaults.bar.bFix"))
-                .orElse(Material.YELLOW_CONCRETE);
-        configMaterials[6] = BukkitUtil.getMaterial(config.getString("cube.defaults.bar.cFix"))
-                .orElse(Material.BLUE_CONCRETE);
-        configMaterials[7] = BukkitUtil.getMaterial(config.getString("cube.defaults.bar.dFix"))
-                .orElse(Material.LIGHT_GRAY_CONCRETE);
-    }
-
-    public static BlockBar create(FileConfiguration config, String basePath) {
-        World world = Bukkit.getWorld(Objects.requireNonNull(config.getString(basePath + "world"),
-                "No world defined for bar!"));
-        int[] xyz = new int[]{
-                config.getInt(basePath + "pos.x"),
-                config.getInt(basePath + "pos.y"),
-                config.getInt(basePath + "pos.z")
-        };
-
-        assert world != null : "Unknown world: " + config.getString(basePath + "world");
-
-        return new BlockBar(world, xyz);
     }
 
     public final static class MaterialGroup {
