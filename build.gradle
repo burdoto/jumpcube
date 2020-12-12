@@ -12,12 +12,7 @@ apply plugin: 'java'
 group 'org.comroid'
 version '0.1.4-SNAPSHOT'
 
-ext {
-    pluginDescription = 'Jump N Run Minigame'
-    mcVersion = '1.16.3'
-    spigotRC = 'R0.1'
-    pluginVersion = version.replace("-SNAPSHOT", "-alpha")
-}
+apply from: 'vars.gradle'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -40,5 +35,4 @@ dependencies {
 }
 
 apply plugin: 'com.github.johnrengelman.shadow'
-apply from: 'vars.gradle'
 apply from: 'jar.gradle'

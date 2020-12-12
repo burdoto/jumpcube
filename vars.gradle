@@ -2,10 +2,10 @@ ext {
     artifactName = 'Spiroid'
     userbase = 'comroid-git'
 
-    projectDescription = 'Implementation Logic of the Spiroid API plugin'
+    pluginDescription = 'Jump N Run Minigame'
 
     snapshot = project.version.endsWith('SNAPSHOT')
-    mcVersion = '1.16.1'
+    mcVersion = '1.16.4'
     mcVersionMj = mcVersion.substring(0, mcVersion.lastIndexOf('.'))
     spigotRC = 'R0.1'
     pluginVersion = version.replace("-SNAPSHOT", "-alpha")
