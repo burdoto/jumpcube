@@ -13,7 +13,7 @@ group 'org.comroid'
 version '0.1.4-SNAPSHOT'
 
 ext {
-    pluginDescription = 'comroid Core Plugin'
+    pluginDescription = 'Jump N Run Minigame'
     mcVersion = '1.16.3'
     spigotRC = 'R0.1'
     pluginVersion = version.replace("-SNAPSHOT", "-alpha")
